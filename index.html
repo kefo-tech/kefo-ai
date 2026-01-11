@@ -5,14 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>منصة البحث العلمي - واجهة دردشة تقنية</title>
 
-  <!-- خطوط: ليلي (مونو) + نهاري (واضح) -->
+  <!--
+    [قسم الخطوط]
+    - في الوضع الليلي نستخدم خط Terminal/Monospace لإحساس "الماتريكس".
+    - في الوضع النهاري نستخدم Cairo/Inter لقراءة أوضح.
+  -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
+    /* =========================
+       [1] Reset + Variables
+       ========================= */
+
     *, *::before, *::after { box-sizing: border-box; }
 
+    /*
+      أهم نقطة لحل مشكلة "النافذة تتجه للأسفل":
+      - نجعل الصفحة نفسها غير قابلة للتمرير (overflow: hidden)
+      - التمرير يكون فقط داخل صندوق المحادثة #conversation
+      هذا يمنع أي نزول للصفحة أو دفع العناصر للأسفل.
+    */
+    html, body {
+      height: 100%;
+      overflow: hidden; /* يمنع تحرّك الصفحة للأسفل */
+    }
+
+    /* متغيرات الألوان والخطوط للوضع الليلي */
     :root{
       --bg: #000;
       --text: #0f0;
@@ -30,12 +50,17 @@
       --font: "Courier New", Courier, monospace;
     }
 
-    /* وضع نهاري: خط واضح + تباين أفضل */
+    /*
+      [2] Theme: Light
+      - خط واضح للقراءة: Cairo/Inter
+      - تباين أعلى
+      - ألوان هادئة
+    */
     body.theme-light{
       --bg: #f7f9ff;
       --text: #102a10;
       --panel: rgba(255,255,255,0.92);
-      --panel2: rgba(155,255,255,5.97);
+      --panel2: rgba(255,255,255,0.97);
       --border: #153a15;
       --bubble: rgba(21,58,21,0.08);
       --bubble-user: rgba(21,58,21,0.12);
@@ -48,6 +73,10 @@
       --font: "Cairo", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     }
 
+    /* =========================
+       [3] Layout: App Shell
+       ========================= */
+
     body {
       font-family: var(--font);
       background: var(--bg);
@@ -55,22 +84,30 @@
       margin: 0;
       padding: 0;
       user-select: none;
-      min-height: 100vh;
       display: flex;
       justify-content: center;
     }
 
+    /*
+      .app:
+      - عمود كامل الصفحة
+      - padding-bottom لترك مساحة لشريط الإدخال الثابت (fixed)
+    */
     .app {
       width: 100%;
       max-width: 720px;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      height: 100vh;        /* مهم: يساوي ارتفاع الشاشة */
       padding: 10px;
-      padding-bottom: 92px; /* مساحة ثابتة لشريط الإدخال fixed */
+      padding-bottom: 96px; /* مساحة شريط الإدخال */
+      gap: 10px;
     }
 
-    /* هيدر أعلى */
+    /* =========================
+       [4] Header (Sticky Top)
+       ========================= */
+
     .header {
       position: sticky;
       top: 0;
@@ -93,12 +130,6 @@
       line-height: 1.2;
     }
 
-    .header-actions{
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
     .icon-btn{
       background: var(--btn-bg);
       color: var(--btn-text);
@@ -114,15 +145,23 @@
       transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
       font-size: 18px;
     }
+
     .icon-btn:hover{
       background: var(--btn-hover-bg);
       color: var(--btn-hover-text);
       transform: scale(1.05);
     }
 
-    /* المحادثة */
+    /* =========================
+       [5] Chat Container
+       ========================= */
+
+    /*
+      #chat-container:
+      - يأخذ كل المساحة المتبقية
+      - min-height:0 مهم حتى يعمل overflow في الأبناء بشكل صحيح
+    */
     #chat-container {
-      margin-top: 10px;
       border: 1px solid var(--border);
       background: var(--panel);
       border-radius: 12px;
@@ -134,16 +173,24 @@
       min-height: 0;
     }
 
+    /*
+      #conversation:
+      - هذه هي منطقة التمرير الوحيدة
+      - overscroll-behavior يمنع سحب التمرير للـ body
+      - padding-bottom بسيط
+    */
     #conversation {
       padding: 12px;
       background: var(--panel2);
-      direction: rtl;
       overflow-y: auto;
       flex: 1;
       min-height: 0;
-      scroll-behavior: smooth;
+      scroll-behavior: auto;      /* أثناء الكتابة نفضّل auto لتفادي الاهتزاز */
+      overscroll-behavior: contain;
+      direction: rtl;
     }
 
+    /* فقاعات الرسائل */
     .message-bubble {
       background: var(--bubble);
       color: var(--text);
@@ -161,6 +208,7 @@
       background: var(--bubble-user);
     }
 
+    /* صندوق المقال (النتيجة) */
     .article-container {
       padding: 14px;
       background: rgba(0, 128, 0, 0.08);
@@ -170,17 +218,16 @@
     }
     body.theme-light .article-container{ background: rgba(21,58,21,0.06); }
 
+    .typing-effect {
+      white-space: pre-wrap;
+    }
+
     .signature {
       margin-top: 8px;
       font-size: 14px;
       color: var(--muted);
       text-align: left;
       font-style: italic;
-    }
-
-    .typing-effect {
-      display: inline-block;
-      white-space: pre-wrap;
     }
 
     .copy-btn {
@@ -201,7 +248,15 @@
       transform: scale(1.03);
     }
 
-    /* شريط الإدخال: Fixed (لن يتحرك أبداً) */
+    /* =========================
+       [6] Input Bar (Fixed Bottom)
+       ========================= */
+
+    /*
+      شريط الإدخال ثابت تماماً ولن يتحرك:
+      position: fixed
+      وهذا يمنع أي تحرك أثناء كتابة النتائج.
+    */
     #input-container {
       position: fixed;
       left: 50%;
@@ -250,10 +305,13 @@
       transform: scale(1.03);
     }
 
-    /* إشعارات */
+    /* =========================
+       [7] Notifications
+       ========================= */
+
     .notification {
       position: fixed;
-      bottom: 110px; /* فوق شريط الإدخال */
+      bottom: 110px;
       right: 20px;
       background: var(--border);
       color: var(--btn-hover-text);
@@ -266,7 +324,10 @@
       max-width: calc(100% - 40px);
     }
 
-    /* لوحة الإعدادات */
+    /* =========================
+       [8] Settings Drawer
+       ========================= */
+
     .settings-drawer{
       position: fixed;
       inset: 0;
@@ -278,7 +339,7 @@
     .settings-backdrop{
       position: absolute;
       inset: 0;
-      background: rgba(22,0,0,8.55);
+      background: rgba(0,0,0,0.55);
     }
 
     .settings-panel{
@@ -366,7 +427,10 @@
       padding-top: 6px;
     }
 
-    /* شاشة اختيار اللغة (مرة واحدة) */
+    /* =========================
+       [9] Language Modal (First Run)
+       ========================= */
+
     .lang-modal{
       position: fixed;
       inset: 0;
@@ -390,7 +454,6 @@
       margin: 0 0 10px 0;
       font-size: 1.05rem;
       line-height: 1.5;
-      
     }
 
     .lang-grid{
@@ -398,7 +461,6 @@
       grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 10px;
-      
     }
 
     .lang-btn{
@@ -412,12 +474,10 @@
       background: var(--panel);
       cursor: pointer;
       transition: transform 0.12s ease, background 0.12s ease;
-      
     }
     .lang-btn:hover{
       transform: scale(1.01);
       background: rgba(0,255,0,0.08);
-      
     }
     body.theme-light .lang-btn:hover{
       background: rgba(21,58,21,0.08);
@@ -432,20 +492,18 @@
     .flag{
       font-size: 20px;
       line-height: 1;
-    }
-
-    .lang-name{
-      font-weight: 700;
-      
-    }
-    .lang-code{
-      font-size: 12px;
-      opacity: 0.8;
       color: rgba(0,255,0,0.7);
     }
 
+    .lang-name{ font-weight: 700; }
+    .lang-code{ font-size: 12px; opacity: 0.8; }
+
+    /* =========================
+       [10] Responsive
+       ========================= */
+
     @media (max-width: 600px) {
-      .app{ padding: 8px; padding-bottom: 96px; }
+      .app{ padding: 8px; padding-bottom: 100px; }
       .header h1 { font-size: 1.05rem; }
       #sendBtn { padding: 12px 14px; font-size: 15px; }
       .message-bubble { max-width: 100%; font-size: 14px; }
@@ -455,30 +513,47 @@
 </head>
 
 <body>
+  <!-- =========================
+       [A] App Layout
+       - Header + Chat container
+       ========================= -->
   <div class="app">
     <div class="header">
       <h1 id="appTitle">منصة البحث العلمي</h1>
-      <div class="header-actions">
-        <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات">⚙️</button>
-      </div>
+      <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات">⚙️</button>
     </div>
 
+    <!-- موسيقى (اختيارية) -->
     <audio id="background-music" preload="none" controls style="display:none">
       <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
     </audio>
 
+    <!-- صندوق المحادثة -->
     <div id="chat-container">
-      <div id="conversation"></div>
+      <div id="conversation">
+        <!--
+          [مرساة أسفل المحادثة]
+          هذه أهم نقطة لتتبّع آخر سطر:
+          سنستدعي scrollIntoView على هذا العنصر مع كل حرف.
+        -->
+        <div id="bottomAnchor" style="height:1px;"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Input fixed -->
+  <!-- =========================
+       [B] Input Bar (Fixed)
+       - ثابت أسفل الشاشة دائماً
+       ========================= -->
   <div id="input-container">
     <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
     <button id="sendBtn">بحث</button>
   </div>
 
-  <!-- Settings Drawer -->
+  <!-- =========================
+       [C] Settings Drawer
+       - وضع ليلي/نهاري + زر تغيير اللغة
+       ========================= -->
   <div class="settings-drawer" id="settingsDrawer" aria-hidden="true">
     <div class="settings-backdrop" id="settingsBackdrop"></div>
     <div class="settings-panel" role="dialog" aria-modal="true" aria-label="لوحة الإعدادات">
@@ -507,10 +582,15 @@
     </div>
   </div>
 
-  <!-- Language Modal (first run + settings) -->
+  <!-- =========================
+       [D] Language Modal (First Run)
+       - يظهر مرة واحدة فقط عند أول فتح
+       - يتم حفظ الاختيار في localStorage
+       ========================= -->
   <div class="lang-modal" id="langModal">
     <div class="lang-card">
       <h3 id="langPrompt">اختر لغة النتائج</h3>
+
       <div class="lang-grid">
         <button class="lang-btn" data-lang="ar">
           <div class="lang-left">
@@ -553,12 +633,12 @@
   </div>
 
   <script>
-    // =========================
-    // State & DOM
-    // =========================
-    let isMusicPlayed = false;
+    /* =========================
+       [1] DOM References + Storage Keys
+       ========================= */
 
     const conversationContainer = document.getElementById('conversation');
+    const bottomAnchor = document.getElementById('bottomAnchor');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
 
@@ -578,30 +658,30 @@
     const STORAGE_THEME = 'kefotube_science_theme';
     const STORAGE_LANG  = 'kefotube_science_lang';
 
-    // لغة نتائج ويكيبيديا الحالية
+    let isMusicPlayed = false;
+
+    /*
+      wikiLang:
+      - لغة ويكيبيديا التي سنستخدمها في الروابط:
+      - ar / en / de
+    */
     let wikiLang = 'ar';
 
-    // =========================
-    // Helpers: Auto-scroll (يبقى الإدخال ثابت)
-    // =========================
-    function scrollToBottom(smooth = true) {
-      const behavior = smooth ? 'smooth' : 'auto';
-      conversationContainer.scrollTo({
-        top: conversationContainer.scrollHeight,
-        behavior
-      });
+    /* =========================
+       [2] أهم دالة: keepLastLineVisible()
+       =========================
+       هذه الدالة تُبقي آخر سطر/حرف ظاهر دائماً:
+       - تعتمد على bottomAnchor الموجود في أسفل المحادثة
+       - تستخدم scrollIntoView ليضمن المتصفح إبراز آخر نقطة.
+    */
+    function keepLastLineVisible() {
+      bottomAnchor.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
 
-    // مراقبة أي إضافة للمحادثة: يضمن إبقاء آخر سطر مرئي
-    const observer = new MutationObserver(() => {
-      // أثناء كتابة المقال لا نريد سلاسة قد تسبب "قفزات" بصرية
-      scrollToBottom(false);
-    });
-    observer.observe(conversationContainer, { childList: true, subtree: true });
+    /* =========================
+       [3] Theme Functions
+       ========================= */
 
-    // =========================
-    // Theme
-    // =========================
     function applyTheme(theme) {
       const isLight = theme === 'light';
       document.body.classList.toggle('theme-light', isLight);
@@ -610,6 +690,7 @@
       localStorage.setItem(STORAGE_THEME, theme);
     }
 
+    // تحميل الثيم من التخزين
     (function initTheme(){
       const saved = localStorage.getItem(STORAGE_THEME) || 'dark';
       applyTheme(saved);
@@ -619,13 +700,15 @@
       applyTheme(themeToggle.checked ? 'light' : 'dark');
     });
 
-    // =========================
-    // Settings drawer
-    // =========================
+    /* =========================
+       [4] Settings Drawer (Open/Close)
+       ========================= */
+
     function openSettings(){
       settingsDrawer.classList.add('open');
       settingsDrawer.setAttribute('aria-hidden', 'false');
     }
+
     function closeSettings(){
       settingsDrawer.classList.remove('open');
       settingsDrawer.setAttribute('aria-hidden', 'true');
@@ -634,6 +717,7 @@
     settingsBtn.addEventListener('click', openSettings);
     closeSettingsBtn.addEventListener('click', closeSettings);
     settingsBackdrop.addEventListener('click', closeSettings);
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeSettings();
@@ -641,9 +725,10 @@
       }
     });
 
-    // =========================
-    // i18n بسيط لرسالة شاشة اللغة (حسب لغة الجهاز)
-    // =========================
+    /* =========================
+       [5] UI Language (Prompt Text) Based on Device Language
+       ========================= */
+
     function getDeviceUILang(){
       const l = (navigator.language || 'en').toLowerCase();
       if (l.startsWith('ar')) return 'ar';
@@ -651,88 +736,67 @@
       return 'en';
     }
 
+    const uiLang = getDeviceUILang();
+
     const uiText = {
       ar: {
         langPrompt: "مرحباً، اختر لغة النتائج",
         langHint: "سيتم تذكر اختيارك تلقائياً عند فتح الموقع مرة أخرى.",
+        welcomeMsg: "اكتب كلمة أو مصطلحاً، وسأعرض لك نتائج ويكيبيديا حسب اللغة المختارة.",
         inputPlaceholder: "اكتب كلمة أو جملة للبحث",
         searchBtn: "بحث",
-        welcomeMsg: "اكتب كلمة أو مصطلحاً، وسأعرض لك نتائج ويكيبيديا حسب اللغة المختارة.",
         noTerm: "❗ يرجى كتابة كلمة للبحث",
         searching: "جاري البحث...",
         results: "📄 نتائج البحث (اضغط على العنوان لعرض الشرح):",
         fetching: "🔄 جاري جلب الشرح...",
         noResults: (t)=>`لا توجد نتائج لكلمة: "${t}"`,
-        fetchErr: "❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.",
         searchErr: "❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.",
+        fetchErr: "❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.",
+        copyBtn: "نسخ النتيجة",
         copied: "✅ تم نسخ النص!",
         copyFail: "❌ لم يتم النسخ!",
-        copyBtn: "نسخ النتيجة",
         signature: "بقلم زكريا كيفو",
-        settings: "الإعدادات",
-        mode: "الوضع",
-        language: "اللغة",
-        change: "تغيير",
-        close: "إغلاق",
-        dark: "ليلي",
-        light: "نهاري",
         currentLang: (code)=>({ar:"عربي",en:"English",de:"Deutsch"}[code]||code)
       },
       en: {
         langPrompt: "Welcome, choose results language",
         langHint: "Your choice will be remembered next time.",
+        welcomeMsg: "Type a term and I will show Wikipedia results in your selected language.",
         inputPlaceholder: "Type a word or phrase to search",
         searchBtn: "Search",
-        welcomeMsg: "Type a term and I will show Wikipedia results in your selected language.",
         noTerm: "❗ Please type a search term",
         searching: "Searching...",
         results: "📄 Results (click a title to view the summary):",
         fetching: "🔄 Fetching summary...",
         noResults: (t)=>`No results for: "${t}"`,
-        fetchErr: "❌ Error fetching summary. Please try again later.",
         searchErr: "❌ Search error. Please try again later.",
+        fetchErr: "❌ Error fetching summary. Please try again later.",
+        copyBtn: "Copy result",
         copied: "✅ Copied!",
         copyFail: "❌ Copy failed!",
-        copyBtn: "Copy result",
         signature: "By Zakaria KeFo",
-        settings: "Settings",
-        mode: "Mode",
-        language: "Language",
-        change: "Change",
-        close: "Close",
-        dark: "Dark",
-        light: "Light",
         currentLang: (code)=>({ar:"Arabic",en:"English",de:"German"}[code]||code)
       },
       de: {
         langPrompt: "Willkommen, wähle die Sprache der Ergebnisse",
         langHint: "Deine Auswahl wird beim nächsten Öffnen gespeichert.",
+        welcomeMsg: "Gib einen Begriff ein, ich zeige Wikipedia-Ergebnisse in deiner gewählten Sprache.",
         inputPlaceholder: "Begriff oder Satz eingeben",
         searchBtn: "Suchen",
-        welcomeMsg: "Gib einen Begriff ein, ich zeige Wikipedia-Ergebnisse in deiner gewählten Sprache.",
         noTerm: "❗ Bitte einen Suchbegriff eingeben",
         searching: "Suche läuft...",
         results: "📄 Ergebnisse (Titel anklicken für Zusammenfassung):",
         fetching: "🔄 Zusammenfassung wird geladen...",
         noResults: (t)=>`Keine Ergebnisse für: "${t}"`,
-        fetchErr: "❌ Fehler beim Laden. Bitte später erneut versuchen.",
         searchErr: "❌ Suchfehler. Bitte später erneut versuchen.",
+        fetchErr: "❌ Fehler beim Laden. Bitte später erneut versuchen.",
+        copyBtn: "Ergebnis kopieren",
         copied: "✅ Kopiert!",
         copyFail: "❌ Kopieren fehlgeschlagen!",
-        copyBtn: "Ergebnis kopieren",
         signature: "Von Zakaria KeFo",
-        settings: "Einstellungen",
-        mode: "Modus",
-        language: "Sprache",
-        change: "Ändern",
-        close: "Schließen",
-        dark: "Dunkel",
-        light: "Hell",
         currentLang: (code)=>({ar:"Arabisch",en:"Englisch",de:"Deutsch"}[code]||code)
       }
     };
-
-    let uiLang = getDeviceUILang();
 
     function t(key, ...args){
       const v = uiText[uiLang][key];
@@ -740,61 +804,41 @@
     }
 
     function applyUIText(){
-      document.getElementById('settingsTitle').textContent = t('settings');
-      document.getElementById('themeRowLabel').textContent = t('mode');
-      document.getElementById('langRowLabel').textContent = t('language');
-      document.getElementById('changeLangBtn').textContent = t('change');
-      document.getElementById('closeSettingsBtn').textContent = t('close');
+      langPrompt.textContent = t('langPrompt');
       document.getElementById('langHint').textContent = t('langHint');
-
       userInput.placeholder = t('inputPlaceholder');
       sendBtn.textContent = t('searchBtn');
-
-      // تحديث تسمية وضع الثيم
-      themeLabel.textContent = document.body.classList.contains('theme-light') ? t('light') : t('dark');
-
-      // رسالة شاشة اللغة
-      langPrompt.textContent = t('langPrompt');
-
-      // عرض اللغة الحالية في الإعدادات
       currentLangLabel.textContent = t('currentLang', wikiLang);
+
+      // تحديث تسمية الوضع بحسب الثيم الحالي (مع الحفاظ على النص العربي هنا)
+      themeLabel.textContent = document.body.classList.contains('theme-light') ? 'نهاري' : 'ليلي';
     }
 
-    // =========================
-    // Language selection
-    // =========================
-    function openLangModal(){
-      langModal.classList.add('open');
-    }
-    function closeLangModal(){
-      langModal.classList.remove('open');
-    }
+    /* =========================
+       [6] Language Modal Open/Close + Save
+       ========================= */
+
+    function openLangModal(){ langModal.classList.add('open'); }
+    function closeLangModal(){ langModal.classList.remove('open'); }
 
     function setWikiLang(langCode){
       wikiLang = langCode;
       localStorage.setItem(STORAGE_LANG, langCode);
-      currentLangLabel.textContent = t('currentLang', wikiLang);
 
-      // ضبط اتجاه الصفحة/لغة الواجهة حسب اختيار المستخدم (اختياري)
-      if (wikiLang === 'ar') {
-        document.documentElement.lang = 'ar';
-        document.documentElement.dir = 'rtl';
-      } else {
-        document.documentElement.lang = wikiLang;
-        document.documentElement.dir = 'ltr';
-      }
-      // المحادثة تبقى RTL كما تريد؟ إذا تريدها تتغير حسب اللغة، ألغِ السطر التالي:
+      // اتجاه عرض المحادثة حسب لغة النتائج (اختياري)
       conversationContainer.style.direction = (wikiLang === 'ar') ? 'rtl' : 'ltr';
+
+      applyUIText();
     }
 
-    // ربط أزرار اللغات
+    // ربط أزرار اللغات داخل شاشة الترحيب
     document.querySelectorAll('.lang-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const lang = btn.getAttribute('data-lang');
         setWikiLang(lang);
         closeLangModal();
-        applyUIText();
-        showCopyNotification(t('copied')); // إشعار صغير لتأكيد الحفظ
+        showCopyNotification(t('copied'));
+        keepLastLineVisible();
       });
     });
 
@@ -804,25 +848,65 @@
       openLangModal();
     });
 
-    // تهيئة اللغة (مرة واحدة)
+    // تهيئة اللغة: إن لم تكن محفوظة، نفتح شاشة الترحيب مرة واحدة
     (function initLang(){
       const saved = localStorage.getItem(STORAGE_LANG);
       if (saved) {
         setWikiLang(saved);
       } else {
         openLangModal();
+        applyUIText();
       }
     })();
 
-    // تهيئة واجهة النصوص
+    // تطبيق نصوص الواجهة
     applyUIText();
 
-    // =========================
-    // Wikipedia API حسب اللغة
-    // =========================
+    /* =========================
+       [7] Wikipedia API Helpers
+       ========================= */
+
     function wikiBase(){
       return `https://${wikiLang}.wikipedia.org/w/api.php`;
     }
+
+    /* =========================
+       [8] Conversation Helpers
+       ========================= */
+
+    function addMessageToConversation(message, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
+      messageDiv.textContent = message;
+
+      // إدخال الرسالة قبل المرساة حتى تبقى المرساة دائماً آخر عنصر
+      conversationContainer.insertBefore(messageDiv, bottomAnchor);
+
+      // أبقِ آخر سطر ظاهر
+      keepLastLineVisible();
+    }
+
+    function showCopyNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => { notification.remove(); }, 500);
+      }, 1800);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => { showCopyNotification(t('copied')); })
+        .catch(() => { showCopyNotification(t('copyFail')); });
+    }
+
+    /* =========================
+       [9] Search Wikipedia
+       ========================= */
 
     async function searchWikipedia() {
       const searchTerm = userInput.value.trim();
@@ -831,6 +915,7 @@
         return;
       }
 
+      // تشغيل الموسيقى أول مرة فقط (اختياري)
       if (!isMusicPlayed) {
         const audio = document.getElementById('background-music');
         audio.play().catch(() => {});
@@ -840,13 +925,13 @@
       addMessageToConversation(searchTerm, true);
       addMessageToConversation(t('searching'), false);
 
-      // list=search يعمل في كل اللغات
       const apiUrl = `${wikiBase()}?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
 
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        displaySearchResults((data.query && data.query.search) ? data.query.search : [], searchTerm);
+        const results = (data.query && data.query.search) ? data.query.search : [];
+        displaySearchResults(results, searchTerm);
       } catch (error) {
         console.error("Search error:", error);
         addMessageToConversation(t('searchErr'), false);
@@ -871,58 +956,73 @@
         resultDiv.style.cursor = 'pointer';
         resultDiv.title = 'Click to fetch summary';
         resultDiv.onclick = () => fetchFullArticle(result.title);
-        conversationContainer.appendChild(resultDiv);
+
+        // إدخاله قبل المرساة حتى تبقى المرساة آخر عنصر
+        conversationContainer.insertBefore(resultDiv, bottomAnchor);
       });
 
-      scrollToBottom(false);
+      keepLastLineVisible();
     }
+
+    /* =========================
+       [10] Fetch Article Summary + Typing Effect
+       ========================= */
 
     async function fetchFullArticle(title) {
       addMessageToConversation(t('fetching'), false);
 
-      // extracts + explaintext: نص نظيف بدون HTML
       const apiUrl = `${wikiBase()}?action=query&format=json&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(title)}&origin=*`;
 
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
         const page = Object.values(data.query.pages)[0];
-        let extract = page.extract || "No summary found.";
+        const extract = page.extract || "No summary found.";
 
+        // إنشاء صندوق المقال
         const articleContainer = document.createElement('div');
         articleContainer.className = 'article-container';
 
+        // منطقة الكتابة التدريجية
         const typingEffectDiv = document.createElement('div');
         typingEffectDiv.className = 'typing-effect';
         articleContainer.appendChild(typingEffectDiv);
 
-        conversationContainer.appendChild(articleContainer);
-        scrollToBottom(false);
+        // إدخال المقال قبل المرساة
+        conversationContainer.insertBefore(articleContainer, bottomAnchor);
+        keepLastLineVisible();
 
-        // كتابة حرف-بحرف مع إبقاء آخر حرف مرئياً، بدون تحريك شريط الإدخال
+        // كتابة حرف-بحرف مع تتبع آخر سطر دائماً
         let i = 0;
-        const speed = 12;
+        const speed = 10; // سرعة الكتابة (كلما قل الرقم زادت السرعة)
+
         function typeWriter() {
           if (i < extract.length) {
             typingEffectDiv.textContent += extract.charAt(i);
             i++;
-            scrollToBottom(false);
+
+            // هذه السطر هو المهم: يبقي آخر حرف ظاهر
+            keepLastLineVisible();
+
             setTimeout(typeWriter, speed);
           } else {
+            // التوقيع
             const signature = document.createElement('div');
             signature.className = 'signature';
             signature.textContent = t('signature');
             articleContainer.appendChild(signature);
 
+            // زر النسخ
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
             copyBtn.textContent = t('copyBtn');
             copyBtn.onclick = () => copyToClipboard(extract + "\n" + t('signature'));
             articleContainer.appendChild(copyBtn);
 
-            scrollToBottom(true);
+            keepLastLineVisible();
           }
         }
+
         typeWriter();
 
       } catch (error) {
@@ -931,56 +1031,31 @@
       }
     }
 
-    function addMessageToConversation(message, isUser = false) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
-      messageDiv.textContent = message;
-      conversationContainer.appendChild(messageDiv);
-      scrollToBottom(false);
-    }
+    /* =========================
+       [11] Events: Click + Enter
+       ========================= */
 
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text)
-        .then(() => { showCopyNotification(t('copied')); })
-        .catch(err => {
-          console.error('Copy error:', err);
-          showCopyNotification(t('copyFail'));
-        });
-    }
-
-    function showCopyNotification(message) {
-      const notification = document.createElement('div');
-      notification.className = 'notification';
-      notification.textContent = message;
-      document.body.appendChild(notification);
-
-      setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => { notification.remove(); }, 500);
-      }, 1800);
-    }
-
-    // Events: زر البحث + Enter
     sendBtn.addEventListener('click', searchWikipedia);
     userInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') searchWikipedia();
     });
 
-    // منع النسخ
+    /* =========================
+       [12] Start Message
+       ========================= */
+
+    addMessageToConversation(t('welcomeMsg'), false);
+
+    /* =========================
+       [13] Anti-Copy (Optional)
+       ========================= */
+
     document.addEventListener("contextmenu", e => e.preventDefault());
     document.addEventListener("selectstart", e => e.preventDefault());
     document.addEventListener("touchstart", e => {
       if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
 
-    // رسالة ترحيب
-    addMessageToConversation(t('welcomeMsg'), false);
-
-    // تحديث تسمية الوضع عند التبديل
-    const themeObserver = new MutationObserver(() => {
-      themeLabel.textContent = document.body.classList.contains('theme-light') ? t('light') : t('dark');
-    });
-    themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   </script>
 </body>
 </html>
