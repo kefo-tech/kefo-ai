@@ -35,7 +35,7 @@
       --bg: #f7f9ff;
       --text: #102a10;
       --panel: rgba(255,255,255,0.92);
-      --panel2: rgba(255,255,255,0.97);
+      --panel2: rgba(155,255,255,5.97);
       --border: #153a15;
       --bubble: rgba(21,58,21,0.08);
       --bubble-user: rgba(21,58,21,0.12);
@@ -278,7 +278,7 @@
     .settings-backdrop{
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(22,0,0,8.55);
     }
 
     .settings-panel{
@@ -390,6 +390,7 @@
       margin: 0 0 10px 0;
       font-size: 1.05rem;
       line-height: 1.5;
+      
     }
 
     .lang-grid{
@@ -397,6 +398,7 @@
       grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 10px;
+      
     }
 
     .lang-btn{
@@ -410,10 +412,12 @@
       background: var(--panel);
       cursor: pointer;
       transition: transform 0.12s ease, background 0.12s ease;
+      
     }
     .lang-btn:hover{
       transform: scale(1.01);
       background: rgba(0,255,0,0.08);
+      
     }
     body.theme-light .lang-btn:hover{
       background: rgba(21,58,21,0.08);
@@ -432,10 +436,12 @@
 
     .lang-name{
       font-weight: 700;
+      
     }
     .lang-code{
       font-size: 12px;
       opacity: 0.8;
+      color: rgba(0,255,0,0.7);
     }
 
     @media (max-width: 600px) {
