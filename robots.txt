@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kefo-tech.github.io/kefo-ai/sitemap.xml
