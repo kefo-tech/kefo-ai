@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>منصة البحث العلمي - واجهة دردشة تقنية</title>
 
+  <!-- خطوط: ليلي (مونو) + نهاري (واضح) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -12,7 +17,7 @@
       --bg: #000;
       --text: #0f0;
       --panel: rgba(0,0,0,0.85);
-      --panel2: rgba(0,0,0,0.9);
+      --panel2: rgba(0,0,0,0.92);
       --border: #0f0;
       --bubble: rgba(0,128,0,0.2);
       --bubble-user: rgba(0,255,0,0.3);
@@ -22,27 +27,29 @@
       --btn-text: #0f0;
       --btn-hover-bg: #0f0;
       --btn-hover-text: #000;
+      --font: "Courier New", Courier, monospace;
     }
 
-    /* وضع نهاري */
+    /* وضع نهاري: خط واضح + تباين أفضل */
     body.theme-light{
-      --bg: #f6f7fb;
-      --text: #0b3d0b;
-      --panel: rgba(255,255,255,0.9);
-      --panel2: rgba(255,255,255,0.95);
-      --border: #0b3d0b;
-      --bubble: rgba(11,61,11,0.08);
-      --bubble-user: rgba(11,61,11,0.12);
-      --shadow: 0 8px 24px rgba(0,0,0,0.12);
-      --muted: rgba(11,61,11,0.75);
+      --bg: #f7f9ff;
+      --text: #102a10;
+      --panel: rgba(255,255,255,0.92);
+      --panel2: rgba(255,255,255,0.97);
+      --border: #153a15;
+      --bubble: rgba(21,58,21,0.08);
+      --bubble-user: rgba(21,58,21,0.12);
+      --shadow: 0 10px 26px rgba(0,0,0,0.12);
+      --muted: rgba(16,42,16,0.7);
       --btn-bg: #ffffff;
-      --btn-text: #0b3d0b;
-      --btn-hover-bg: #0b3d0b;
+      --btn-text: #153a15;
+      --btn-hover-bg: #153a15;
       --btn-hover-text: #ffffff;
+      --font: "Cairo", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     }
 
     body {
-      font-family: 'Courier New', Courier, monospace;
+      font-family: var(--font);
       background: var(--bg);
       color: var(--text);
       margin: 0;
@@ -53,17 +60,17 @@
       justify-content: center;
     }
 
-    /* إطار عام */
     .app {
       width: 100%;
-      max-width: 680px;
+      max-width: 720px;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
       padding: 10px;
+      padding-bottom: 92px; /* مساحة ثابتة لشريط الإدخال fixed */
     }
 
-    /* هيدر ثابت أعلى */
+    /* هيدر أعلى */
     .header {
       position: sticky;
       top: 0;
@@ -81,7 +88,7 @@
 
     .header h1{
       margin: 0;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       text-shadow: 0 0 10px var(--border), 0 0 20px var(--border);
       line-height: 1.2;
     }
@@ -113,123 +120,7 @@
       transform: scale(1.05);
     }
 
-    /* لوحة الإعدادات */
-    .settings-drawer{
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: none;
-    }
-    .settings-drawer.open{ display: block; }
-
-    .settings-backdrop{
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-    }
-
-    .settings-panel{
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      max-width: 680px;
-      margin: 0 auto;
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-    }
-
-    .settings-panel h2{
-      margin: 0 0 10px 0;
-      font-size: 1.05rem;
-      color: var(--text);
-    }
-
-    .setting-row{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-    }
-
-    .setting-row .label{
-      color: var(--text);
-      opacity: 0.95;
-      font-size: 0.95rem;
-    }
-
-    .toggle{
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .toggle input{ display:none; }
-
-    .toggle-pill{
-      width: 54px;
-      height: 30px;
-      border-radius: 99px;
-      border: 1px solid var(--border);
-      background: var(--btn-bg);
-      position: relative;
-      transition: background 0.2s ease;
-    }
-
-    .toggle-pill::after{
-      content: "";
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--border);
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 3px;
-      transition: right 0.2s ease;
-      box-shadow: 0 0 10px rgba(0,255,0,0.25);
-    }
-
-    body.theme-light .toggle-pill::after{
-      box-shadow: 0 0 10px rgba(11,61,11,0.25);
-    }
-
-    .toggle input:checked + .toggle-pill::after{
-      right: 27px; /* RTL: تحريك الدائرة لليسار بصرياً */
-    }
-
-    .settings-footer{
-      display: flex;
-      justify-content: flex-end;
-      padding-top: 10px;
-    }
-
-    .btn{
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      border: 1px solid var(--border);
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
-      font-size: 14px;
-    }
-    .btn:hover{
-      background: var(--btn-hover-bg);
-      color: var(--btn-hover-text);
-      transform: scale(1.03);
-    }
-
-    /* جسم المحادثة */
+    /* المحادثة */
     #chat-container {
       margin-top: 10px;
       border: 1px solid var(--border);
@@ -240,7 +131,7 @@
       display: flex;
       flex-direction: column;
       flex: 1;
-      min-height: 0; /* مهم للتمرير */
+      min-height: 0;
     }
 
     #conversation {
@@ -262,11 +153,11 @@
       margin: 10px 0;
       max-width: 92%;
       word-wrap: break-word;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .user-bubble {
-      margin-right: auto; /* RTL: فقاعة المستخدم إلى اليسار بصرياً */
+      margin-right: auto;
       background: var(--bubble-user);
     }
 
@@ -277,22 +168,19 @@
       border-radius: 12px;
       margin: 12px 0;
     }
-    body.theme-light .article-container{
-      background: rgba(11,61,11,0.06);
-    }
+    body.theme-light .article-container{ background: rgba(21,58,21,0.06); }
 
     .signature {
       margin-top: 8px;
       font-size: 14px;
       color: var(--muted);
-      text-align: left; /* RTL: التوقيع يظهر يميناً/يساراً حسب رغبتك */
+      text-align: left;
       font-style: italic;
     }
 
     .typing-effect {
       display: inline-block;
       white-space: pre-wrap;
-      font-family: 'Courier New', Courier, monospace;
     }
 
     .copy-btn {
@@ -313,18 +201,24 @@
       transform: scale(1.03);
     }
 
-    /* شريط إدخال ثابت أسفل */
+    /* شريط الإدخال: Fixed (لن يتحرك أبداً) */
     #input-container {
-      position: sticky;
-      bottom: 0;
-      z-index: 40;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      width: calc(100% - 20px);
+      max-width: 720px;
+      z-index: 60;
+
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 12px;
       background: var(--panel2);
-      border-top: 1px solid var(--border);
-      flex-wrap: nowrap;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
     }
 
     #userInput {
@@ -336,11 +230,7 @@
       background: var(--btn-bg);
       color: var(--btn-text);
       caret-color: var(--border);
-      box-shadow: 0 0 10px rgba(0,255,0,0.15);
       outline: none;
-    }
-    body.theme-light #userInput{
-      box-shadow: 0 0 10px rgba(11,61,11,0.12);
     }
 
     #sendBtn {
@@ -360,9 +250,10 @@
       transform: scale(1.03);
     }
 
+    /* إشعارات */
     .notification {
       position: fixed;
-      bottom: 20px;
+      bottom: 110px; /* فوق شريط الإدخال */
       right: 20px;
       background: var(--border);
       color: var(--btn-hover-text);
@@ -375,11 +266,184 @@
       max-width: calc(100% - 40px);
     }
 
+    /* لوحة الإعدادات */
+    .settings-drawer{
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+    }
+    .settings-drawer.open{ display: block; }
+
+    .settings-backdrop{
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+    }
+
+    .settings-panel{
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+
+    .settings-panel h2{
+      margin: 0 0 10px 0;
+      font-size: 1.05rem;
+    }
+
+    .setting-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      margin-bottom: 10px;
+    }
+
+    .toggle{
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle input{ display:none; }
+
+    .toggle-pill{
+      width: 54px;
+      height: 30px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--btn-bg);
+      position: relative;
+    }
+    .toggle-pill::after{
+      content: "";
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--border);
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 3px;
+      transition: right 0.2s ease;
+    }
+    .toggle input:checked + .toggle-pill::after{ right: 27px; }
+
+    .btn{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+      font-size: 14px;
+    }
+    .btn:hover{
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
+      transform: scale(1.03);
+    }
+
+    .settings-footer{
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 6px;
+    }
+
+    /* شاشة اختيار اللغة (مرة واحدة) */
+    .lang-modal{
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: none;
+      background: rgba(0,0,0,0.7);
+    }
+    .lang-modal.open{ display: grid; place-items: center; }
+
+    .lang-card{
+      width: calc(100% - 24px);
+      max-width: 520px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .lang-card h3{
+      margin: 0 0 10px 0;
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+
+    .lang-grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .lang-btn{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+    .lang-btn:hover{
+      transform: scale(1.01);
+      background: rgba(0,255,0,0.08);
+    }
+    body.theme-light .lang-btn:hover{
+      background: rgba(21,58,21,0.08);
+    }
+
+    .lang-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .flag{
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .lang-name{
+      font-weight: 700;
+    }
+    .lang-code{
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
     @media (max-width: 600px) {
-      .app{ padding: 8px; }
+      .app{ padding: 8px; padding-bottom: 96px; }
       .header h1 { font-size: 1.05rem; }
       #sendBtn { padding: 12px 14px; font-size: 15px; }
       .message-bubble { max-width: 100%; font-size: 14px; }
+      #input-container { bottom: 8px; width: calc(100% - 16px); }
     }
   </style>
 </head>
@@ -387,7 +451,7 @@
 <body>
   <div class="app">
     <div class="header">
-      <h1>منصة البحث العلمي</h1>
+      <h1 id="appTitle">منصة البحث العلمي</h1>
       <div class="header-actions">
         <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات">⚙️</button>
       </div>
@@ -399,26 +463,36 @@
 
     <div id="chat-container">
       <div id="conversation"></div>
-      <div id="input-container">
-        <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
-        <button id="sendBtn">بحث</button>
-      </div>
     </div>
+  </div>
+
+  <!-- Input fixed -->
+  <div id="input-container">
+    <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
+    <button id="sendBtn">بحث</button>
   </div>
 
   <!-- Settings Drawer -->
   <div class="settings-drawer" id="settingsDrawer" aria-hidden="true">
     <div class="settings-backdrop" id="settingsBackdrop"></div>
     <div class="settings-panel" role="dialog" aria-modal="true" aria-label="لوحة الإعدادات">
-      <h2>الإعدادات</h2>
+      <h2 id="settingsTitle">الإعدادات</h2>
 
       <div class="setting-row">
-        <div class="label">الوضع</div>
+        <div id="themeRowLabel">الوضع</div>
         <label class="toggle" title="تبديل الوضع ليلي/نهاري">
           <input type="checkbox" id="themeToggle" />
           <span class="toggle-pill"></span>
           <span id="themeLabel">ليلي</span>
         </label>
+      </div>
+
+      <div class="setting-row">
+        <div id="langRowLabel">اللغة</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span id="currentLangLabel" style="opacity:.9;"></span>
+          <button class="btn" id="changeLangBtn">تغيير</button>
+        </div>
       </div>
 
       <div class="settings-footer">
@@ -427,44 +501,111 @@
     </div>
   </div>
 
+  <!-- Language Modal (first run + settings) -->
+  <div class="lang-modal" id="langModal">
+    <div class="lang-card">
+      <h3 id="langPrompt">اختر لغة النتائج</h3>
+      <div class="lang-grid">
+        <button class="lang-btn" data-lang="ar">
+          <div class="lang-left">
+            <span class="flag">🇵🇸</span>
+            <div>
+              <div class="lang-name">عربي</div>
+              <div class="lang-code">Wikipedia: ar</div>
+            </div>
+          </div>
+          <span>→</span>
+        </button>
+
+        <button class="lang-btn" data-lang="en">
+          <div class="lang-left">
+            <span class="flag">🇬🇧</span>
+            <div>
+              <div class="lang-name">English</div>
+              <div class="lang-code">Wikipedia: en</div>
+            </div>
+          </div>
+          <span>→</span>
+        </button>
+
+        <button class="lang-btn" data-lang="de">
+          <div class="lang-left">
+            <span class="flag">🇩🇪</span>
+            <div>
+              <div class="lang-name">Deutsch</div>
+              <div class="lang-code">Wikipedia: de</div>
+            </div>
+          </div>
+          <span>→</span>
+        </button>
+      </div>
+
+      <div style="margin-top:12px; font-size:12px; opacity:.85;" id="langHint">
+        سيتم تذكر اختيارك تلقائياً عند فتح الموقع مرة أخرى.
+      </div>
+    </div>
+  </div>
+
   <script>
+    // =========================
+    // State & DOM
+    // =========================
     let isMusicPlayed = false;
-    let currentSearchResults = [];
 
     const conversationContainer = document.getElementById('conversation');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    // =========================
-    // Auto-scroll (مهم جداً)
-    // =========================
-    function scrollToBottom(smooth = true) {
-      // استهداف نهاية المحتوى بشكل موثوق
-      const behavior = smooth ? 'smooth' : 'auto';
-      conversationContainer.scrollTo({ top: conversationContainer.scrollHeight, behavior });
-    }
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsDrawer = document.getElementById('settingsDrawer');
+    const settingsBackdrop = document.getElementById('settingsBackdrop');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
 
-    // مراقبة أي إضافة للـ DOM داخل المحادثة والتمرير تلقائياً
-    const observer = new MutationObserver(() => scrollToBottom(true));
-    observer.observe(conversationContainer, { childList: true, subtree: true });
-
-    // =========================
-    // Theme (ليلي/نهاري) + حفظ
-    // =========================
     const themeToggle = document.getElementById('themeToggle');
     const themeLabel = document.getElementById('themeLabel');
 
+    const langModal = document.getElementById('langModal');
+    const langPrompt = document.getElementById('langPrompt');
+    const changeLangBtn = document.getElementById('changeLangBtn');
+    const currentLangLabel = document.getElementById('currentLangLabel');
+
+    const STORAGE_THEME = 'kefotube_science_theme';
+    const STORAGE_LANG  = 'kefotube_science_lang';
+
+    // لغة نتائج ويكيبيديا الحالية
+    let wikiLang = 'ar';
+
+    // =========================
+    // Helpers: Auto-scroll (يبقى الإدخال ثابت)
+    // =========================
+    function scrollToBottom(smooth = true) {
+      const behavior = smooth ? 'smooth' : 'auto';
+      conversationContainer.scrollTo({
+        top: conversationContainer.scrollHeight,
+        behavior
+      });
+    }
+
+    // مراقبة أي إضافة للمحادثة: يضمن إبقاء آخر سطر مرئي
+    const observer = new MutationObserver(() => {
+      // أثناء كتابة المقال لا نريد سلاسة قد تسبب "قفزات" بصرية
+      scrollToBottom(false);
+    });
+    observer.observe(conversationContainer, { childList: true, subtree: true });
+
+    // =========================
+    // Theme
+    // =========================
     function applyTheme(theme) {
       const isLight = theme === 'light';
       document.body.classList.toggle('theme-light', isLight);
       themeToggle.checked = isLight;
       themeLabel.textContent = isLight ? 'نهاري' : 'ليلي';
-      localStorage.setItem('kefotube_science_theme', theme);
+      localStorage.setItem(STORAGE_THEME, theme);
     }
 
-    // تحميل الثيم المحفوظ
     (function initTheme(){
-      const saved = localStorage.getItem('kefotube_science_theme') || 'dark';
+      const saved = localStorage.getItem(STORAGE_THEME) || 'dark';
       applyTheme(saved);
     })();
 
@@ -475,11 +616,6 @@
     // =========================
     // Settings drawer
     // =========================
-    const settingsBtn = document.getElementById('settingsBtn');
-    const settingsDrawer = document.getElementById('settingsDrawer');
-    const settingsBackdrop = document.getElementById('settingsBackdrop');
-    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-
     function openSettings(){
       settingsDrawer.classList.add('open');
       settingsDrawer.setAttribute('aria-hidden', 'false');
@@ -493,37 +629,221 @@
     closeSettingsBtn.addEventListener('click', closeSettings);
     settingsBackdrop.addEventListener('click', closeSettings);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeSettings();
+      if (e.key === 'Escape') {
+        closeSettings();
+        closeLangModal();
+      }
     });
 
     // =========================
-    // Wikipedia search
+    // i18n بسيط لرسالة شاشة اللغة (حسب لغة الجهاز)
     // =========================
+    function getDeviceUILang(){
+      const l = (navigator.language || 'en').toLowerCase();
+      if (l.startsWith('ar')) return 'ar';
+      if (l.startsWith('de')) return 'de';
+      return 'en';
+    }
+
+    const uiText = {
+      ar: {
+        langPrompt: "مرحباً، اختر لغة النتائج",
+        langHint: "سيتم تذكر اختيارك تلقائياً عند فتح الموقع مرة أخرى.",
+        inputPlaceholder: "اكتب كلمة أو جملة للبحث",
+        searchBtn: "بحث",
+        welcomeMsg: "اكتب كلمة أو مصطلحاً، وسأعرض لك نتائج ويكيبيديا حسب اللغة المختارة.",
+        noTerm: "❗ يرجى كتابة كلمة للبحث",
+        searching: "جاري البحث...",
+        results: "📄 نتائج البحث (اضغط على العنوان لعرض الشرح):",
+        fetching: "🔄 جاري جلب الشرح...",
+        noResults: (t)=>`لا توجد نتائج لكلمة: "${t}"`,
+        fetchErr: "❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.",
+        searchErr: "❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.",
+        copied: "✅ تم نسخ النص!",
+        copyFail: "❌ لم يتم النسخ!",
+        copyBtn: "نسخ النتيجة",
+        signature: "بقلم زكريا كيفو",
+        settings: "الإعدادات",
+        mode: "الوضع",
+        language: "اللغة",
+        change: "تغيير",
+        close: "إغلاق",
+        dark: "ليلي",
+        light: "نهاري",
+        currentLang: (code)=>({ar:"عربي",en:"English",de:"Deutsch"}[code]||code)
+      },
+      en: {
+        langPrompt: "Welcome, choose results language",
+        langHint: "Your choice will be remembered next time.",
+        inputPlaceholder: "Type a word or phrase to search",
+        searchBtn: "Search",
+        welcomeMsg: "Type a term and I will show Wikipedia results in your selected language.",
+        noTerm: "❗ Please type a search term",
+        searching: "Searching...",
+        results: "📄 Results (click a title to view the summary):",
+        fetching: "🔄 Fetching summary...",
+        noResults: (t)=>`No results for: "${t}"`,
+        fetchErr: "❌ Error fetching summary. Please try again later.",
+        searchErr: "❌ Search error. Please try again later.",
+        copied: "✅ Copied!",
+        copyFail: "❌ Copy failed!",
+        copyBtn: "Copy result",
+        signature: "By Zakaria KeFo",
+        settings: "Settings",
+        mode: "Mode",
+        language: "Language",
+        change: "Change",
+        close: "Close",
+        dark: "Dark",
+        light: "Light",
+        currentLang: (code)=>({ar:"Arabic",en:"English",de:"German"}[code]||code)
+      },
+      de: {
+        langPrompt: "Willkommen, wähle die Sprache der Ergebnisse",
+        langHint: "Deine Auswahl wird beim nächsten Öffnen gespeichert.",
+        inputPlaceholder: "Begriff oder Satz eingeben",
+        searchBtn: "Suchen",
+        welcomeMsg: "Gib einen Begriff ein, ich zeige Wikipedia-Ergebnisse in deiner gewählten Sprache.",
+        noTerm: "❗ Bitte einen Suchbegriff eingeben",
+        searching: "Suche läuft...",
+        results: "📄 Ergebnisse (Titel anklicken für Zusammenfassung):",
+        fetching: "🔄 Zusammenfassung wird geladen...",
+        noResults: (t)=>`Keine Ergebnisse für: "${t}"`,
+        fetchErr: "❌ Fehler beim Laden. Bitte später erneut versuchen.",
+        searchErr: "❌ Suchfehler. Bitte später erneut versuchen.",
+        copied: "✅ Kopiert!",
+        copyFail: "❌ Kopieren fehlgeschlagen!",
+        copyBtn: "Ergebnis kopieren",
+        signature: "Von Zakaria KeFo",
+        settings: "Einstellungen",
+        mode: "Modus",
+        language: "Sprache",
+        change: "Ändern",
+        close: "Schließen",
+        dark: "Dunkel",
+        light: "Hell",
+        currentLang: (code)=>({ar:"Arabisch",en:"Englisch",de:"Deutsch"}[code]||code)
+      }
+    };
+
+    let uiLang = getDeviceUILang();
+
+    function t(key, ...args){
+      const v = uiText[uiLang][key];
+      return typeof v === 'function' ? v(...args) : v;
+    }
+
+    function applyUIText(){
+      document.getElementById('settingsTitle').textContent = t('settings');
+      document.getElementById('themeRowLabel').textContent = t('mode');
+      document.getElementById('langRowLabel').textContent = t('language');
+      document.getElementById('changeLangBtn').textContent = t('change');
+      document.getElementById('closeSettingsBtn').textContent = t('close');
+      document.getElementById('langHint').textContent = t('langHint');
+
+      userInput.placeholder = t('inputPlaceholder');
+      sendBtn.textContent = t('searchBtn');
+
+      // تحديث تسمية وضع الثيم
+      themeLabel.textContent = document.body.classList.contains('theme-light') ? t('light') : t('dark');
+
+      // رسالة شاشة اللغة
+      langPrompt.textContent = t('langPrompt');
+
+      // عرض اللغة الحالية في الإعدادات
+      currentLangLabel.textContent = t('currentLang', wikiLang);
+    }
+
+    // =========================
+    // Language selection
+    // =========================
+    function openLangModal(){
+      langModal.classList.add('open');
+    }
+    function closeLangModal(){
+      langModal.classList.remove('open');
+    }
+
+    function setWikiLang(langCode){
+      wikiLang = langCode;
+      localStorage.setItem(STORAGE_LANG, langCode);
+      currentLangLabel.textContent = t('currentLang', wikiLang);
+
+      // ضبط اتجاه الصفحة/لغة الواجهة حسب اختيار المستخدم (اختياري)
+      if (wikiLang === 'ar') {
+        document.documentElement.lang = 'ar';
+        document.documentElement.dir = 'rtl';
+      } else {
+        document.documentElement.lang = wikiLang;
+        document.documentElement.dir = 'ltr';
+      }
+      // المحادثة تبقى RTL كما تريد؟ إذا تريدها تتغير حسب اللغة، ألغِ السطر التالي:
+      conversationContainer.style.direction = (wikiLang === 'ar') ? 'rtl' : 'ltr';
+    }
+
+    // ربط أزرار اللغات
+    document.querySelectorAll('.lang-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const lang = btn.getAttribute('data-lang');
+        setWikiLang(lang);
+        closeLangModal();
+        applyUIText();
+        showCopyNotification(t('copied')); // إشعار صغير لتأكيد الحفظ
+      });
+    });
+
+    // زر تغيير اللغة من الإعدادات
+    changeLangBtn.addEventListener('click', ()=>{
+      closeSettings();
+      openLangModal();
+    });
+
+    // تهيئة اللغة (مرة واحدة)
+    (function initLang(){
+      const saved = localStorage.getItem(STORAGE_LANG);
+      if (saved) {
+        setWikiLang(saved);
+      } else {
+        openLangModal();
+      }
+    })();
+
+    // تهيئة واجهة النصوص
+    applyUIText();
+
+    // =========================
+    // Wikipedia API حسب اللغة
+    // =========================
+    function wikiBase(){
+      return `https://${wikiLang}.wikipedia.org/w/api.php`;
+    }
+
     async function searchWikipedia() {
       const searchTerm = userInput.value.trim();
       if (!searchTerm) {
-        showCopyNotification("❗ يرجى كتابة كلمة للبحث");
+        showCopyNotification(t('noTerm'));
         return;
       }
 
       if (!isMusicPlayed) {
         const audio = document.getElementById('background-music');
-        audio.play().catch(() => { /* تجاهل قيود التشغيل التلقائي */ });
+        audio.play().catch(() => {});
         isMusicPlayed = true;
       }
 
       addMessageToConversation(searchTerm, true);
-      addMessageToConversation("جاري البحث...", false);
+      addMessageToConversation(t('searching'), false);
 
-      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
+      // list=search يعمل في كل اللغات
+      const apiUrl = `${wikiBase()}?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
 
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        displaySearchResults(data.query.search, searchTerm);
+        displaySearchResults((data.query && data.query.search) ? data.query.search : [], searchTerm);
       } catch (error) {
-        console.error("حدث خطأ أثناء البحث:", error);
-        addMessageToConversation("❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.", false);
+        console.error("Search error:", error);
+        addMessageToConversation(t('searchErr'), false);
       } finally {
         userInput.value = '';
         userInput.focus();
@@ -532,36 +852,36 @@
 
     function displaySearchResults(results, searchTerm) {
       if (!results || results.length === 0) {
-        addMessageToConversation(`لا توجد نتائج لكلمة: "${searchTerm}"`, false);
+        addMessageToConversation(t('noResults', searchTerm), false);
         return;
       }
 
-      currentSearchResults = results;
-      addMessageToConversation("📄 نتائج البحث (اضغط على العنوان لعرض الشرح):", false);
+      addMessageToConversation(t('results'), false);
 
       results.slice(0, 10).forEach((result, index) => {
         const resultDiv = document.createElement('div');
         resultDiv.className = 'message-bubble';
         resultDiv.textContent = `${index + 1}. ${result.title}`;
         resultDiv.style.cursor = 'pointer';
-        resultDiv.title = 'اضغط لجلب الشرح';
+        resultDiv.title = 'Click to fetch summary';
         resultDiv.onclick = () => fetchFullArticle(result.title);
         conversationContainer.appendChild(resultDiv);
       });
 
-      scrollToBottom(true);
+      scrollToBottom(false);
     }
 
     async function fetchFullArticle(title) {
-      addMessageToConversation("🔄 جاري جلب الشرح...", false);
+      addMessageToConversation(t('fetching'), false);
 
-      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(title)}&origin=*`;
+      // extracts + explaintext: نص نظيف بدون HTML
+      const apiUrl = `${wikiBase()}?action=query&format=json&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(title)}&origin=*`;
 
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
         const page = Object.values(data.query.pages)[0];
-        let extract = page.extract || "لم يتم العثور على شرح.";
+        let extract = page.extract || "No summary found.";
 
         const articleContainer = document.createElement('div');
         articleContainer.className = 'article-container';
@@ -570,37 +890,38 @@
         typingEffectDiv.className = 'typing-effect';
         articleContainer.appendChild(typingEffectDiv);
 
-        // تأثير كتابة محسّن: حرفياً/كلمة مع تمرير مستمر
+        conversationContainer.appendChild(articleContainer);
+        scrollToBottom(false);
+
+        // كتابة حرف-بحرف مع إبقاء آخر حرف مرئياً، بدون تحريك شريط الإدخال
         let i = 0;
-        const speed = 18; // أسرع من السابق لتجربة أفضل
+        const speed = 12;
         function typeWriter() {
           if (i < extract.length) {
             typingEffectDiv.textContent += extract.charAt(i);
             i++;
-            scrollToBottom(false); // بدون سلاسة لتفادي "اهتزاز" أثناء الكتابة
+            scrollToBottom(false);
             setTimeout(typeWriter, speed);
           } else {
             const signature = document.createElement('div');
             signature.className = 'signature';
-            signature.textContent = "بقلم زكريا كيفو";
+            signature.textContent = t('signature');
             articleContainer.appendChild(signature);
 
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
-            copyBtn.textContent = "نسخ النتيجة";
-            copyBtn.onclick = () => copyToClipboard(extract + "\nبقلم زكريا كيفو");
+            copyBtn.textContent = t('copyBtn');
+            copyBtn.onclick = () => copyToClipboard(extract + "\n" + t('signature'));
             articleContainer.appendChild(copyBtn);
 
             scrollToBottom(true);
           }
         }
-
         typeWriter();
-        conversationContainer.appendChild(articleContainer);
-        scrollToBottom(true);
+
       } catch (error) {
-        console.error("حدث خطأ أثناء جلب الشرح:", error);
-        addMessageToConversation("❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.", false);
+        console.error("Fetch error:", error);
+        addMessageToConversation(t('fetchErr'), false);
       }
     }
 
@@ -609,15 +930,15 @@
       messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
       messageDiv.textContent = message;
       conversationContainer.appendChild(messageDiv);
-      scrollToBottom(true);
+      scrollToBottom(false);
     }
 
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text)
-        .then(() => { showCopyNotification("✅ تم نسخ النص!"); })
+        .then(() => { showCopyNotification(t('copied')); })
         .catch(err => {
-          console.error('خطأ في النسخ:', err);
-          showCopyNotification("❌ لم يتم النسخ!");
+          console.error('Copy error:', err);
+          showCopyNotification(t('copyFail'));
         });
     }
 
@@ -630,28 +951,30 @@
       setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => { notification.remove(); }, 500);
-      }, 2000);
+      }, 1800);
     }
 
-    // =========================
     // Events: زر البحث + Enter
-    // =========================
     sendBtn.addEventListener('click', searchWikipedia);
     userInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') searchWikipedia();
     });
 
-    // =========================
-    // منع النسخ (كما طلبت سابقاً)
-    // =========================
+    // منع النسخ
     document.addEventListener("contextmenu", e => e.preventDefault());
     document.addEventListener("selectstart", e => e.preventDefault());
     document.addEventListener("touchstart", e => {
       if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
 
-    // بداية: رسالة ترحيب
-    addMessageToConversation("اكتب كلمة أو مصطلحاً علمياً وسأعرض لك نتائج ويكيبيديا العربية.", false);
+    // رسالة ترحيب
+    addMessageToConversation(t('welcomeMsg'), false);
+
+    // تحديث تسمية الوضع عند التبديل
+    const themeObserver = new MutationObserver(() => {
+      themeLabel.textContent = document.body.classList.contains('theme-light') ? t('light') : t('dark');
+    });
+    themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   </script>
 </body>
 </html>
