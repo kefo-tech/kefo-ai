@@ -1,183 +1,522 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>منصة البحث العلمي - واجهة دردشة تقنية</title>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; }
+
+    :root{
+      --bg: #000;
+      --text: #0f0;
+      --panel: rgba(0,0,0,0.85);
+      --panel2: rgba(0,0,0,0.9);
+      --border: #0f0;
+      --bubble: rgba(0,128,0,0.2);
+      --bubble-user: rgba(0,255,0,0.3);
+      --shadow: 0 0 20px var(--border);
+      --muted: rgba(0,255,0,0.75);
+      --btn-bg: #000;
+      --btn-text: #0f0;
+      --btn-hover-bg: #0f0;
+      --btn-hover-text: #000;
+    }
+
+    /* وضع نهاري */
+    body.theme-light{
+      --bg: #f6f7fb;
+      --text: #0b3d0b;
+      --panel: rgba(255,255,255,0.9);
+      --panel2: rgba(255,255,255,0.95);
+      --border: #0b3d0b;
+      --bubble: rgba(11,61,11,0.08);
+      --bubble-user: rgba(11,61,11,0.12);
+      --shadow: 0 8px 24px rgba(0,0,0,0.12);
+      --muted: rgba(11,61,11,0.75);
+      --btn-bg: #ffffff;
+      --btn-text: #0b3d0b;
+      --btn-hover-bg: #0b3d0b;
+      --btn-hover-text: #ffffff;
+    }
+
     body {
       font-family: 'Courier New', Courier, monospace;
-      background-color: #000;
-      color: #0f0;
-      margin: 0 auto;
-      padding: 10px;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* إطار عام */
+    .app {
+      width: 100%;
+      max-width: 680px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      user-select: none;
-      max-width: 100%;
-    }
-    h1 {
-      margin: 10px 0;
-      font-size: 1.5rem;
-      text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
-      text-align: center;
-    }
-    #chat-container {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      border: 1px solid #0f0;
-      background-color: rgba(0, 0, 0, 0.8);
-      border-radius: 10px;
-      box-shadow: 0 0 20px #0f0;
+      min-height: 100vh;
       padding: 10px;
-      box-sizing: border-box;
     }
-    #conversation {
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.9);
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      direction: rtl;
-    }
-    .message-bubble {
-      background-color: rgba(0, 128, 0, 0.2);
-      color: #0f0;
-      padding: 10px;
-      border: 1px solid #0f0;
-      border-radius: 5px;
-      margin: 10px 0;
-      max-width: 90%;
-      word-wrap: break-word;
-    }
-    .user-bubble {
-      align-self: flex-end;
-      background-color: rgba(0, 255, 0, 0.3);
-    }
-    #input-container {
+
+    /* هيدر ثابت أعلى */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
       display: flex;
       align-items: center;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.9);
-      border-top: 1px solid #0f0;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
     }
-    #userInput {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #0f0;
-      border-radius: 5px;
-      background-color: #000;
-      color: #0f0;
-      caret-color: #0f0;
-      box-shadow: 0 0 10px #0f0;
-      margin-bottom: 10px;
+
+    .header h1{
+      margin: 0;
+      font-size: 1.25rem;
+      text-shadow: 0 0 10px var(--border), 0 0 20px var(--border);
+      line-height: 1.2;
     }
-    #sendBtn {
-      background-color: #000;
-      color: #0f0;
-      border: 1px solid #0f0;
-      padding: 10px 20px;
-      font-size: 16px;
+
+    .header-actions{
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       cursor: pointer;
-      border-radius: 5px;
-      margin-right: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0,255,0,0.15);
+      transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+      font-size: 18px;
     }
-    #sendBtn:hover {
-      background-color: #0f0;
-      color: #000;
-      transform: scale(1.1);
-    }
-    .copy-btn {
-      background-color: #000;
-      color: #0f0;
-      border: 1px solid #0f0;
-      padding: 8px 15px;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 12px;
-      display: inline-block;
-      text-align: center;
-    }
-    .copy-btn:hover {
-      background-color: #0f0;
-      color: #000;
+    .icon-btn:hover{
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
       transform: scale(1.05);
     }
-    .article-container {
-      padding: 20px;
-      background-color: rgba(0, 128, 0, 0.1);
-      border: 1px solid #0f0;
-      border-radius: 5px;
-      margin: 15px 0;
+
+    /* لوحة الإعدادات */
+    .settings-drawer{
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
     }
+    .settings-drawer.open{ display: block; }
+
+    .settings-backdrop{
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+    }
+
+    .settings-panel{
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      max-width: 680px;
+      margin: 0 auto;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+
+    .settings-panel h2{
+      margin: 0 0 10px 0;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+
+    .setting-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    .setting-row .label{
+      color: var(--text);
+      opacity: 0.95;
+      font-size: 0.95rem;
+    }
+
+    .toggle{
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle input{ display:none; }
+
+    .toggle-pill{
+      width: 54px;
+      height: 30px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--btn-bg);
+      position: relative;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-pill::after{
+      content: "";
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--border);
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 3px;
+      transition: right 0.2s ease;
+      box-shadow: 0 0 10px rgba(0,255,0,0.25);
+    }
+
+    body.theme-light .toggle-pill::after{
+      box-shadow: 0 0 10px rgba(11,61,11,0.25);
+    }
+
+    .toggle input:checked + .toggle-pill::after{
+      right: 27px; /* RTL: تحريك الدائرة لليسار بصرياً */
+    }
+
+    .settings-footer{
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 10px;
+    }
+
+    .btn{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+      font-size: 14px;
+    }
+    .btn:hover{
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
+      transform: scale(1.03);
+    }
+
+    /* جسم المحادثة */
+    #chat-container {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0; /* مهم للتمرير */
+    }
+
+    #conversation {
+      padding: 12px;
+      background: var(--panel2);
+      direction: rtl;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      scroll-behavior: smooth;
+    }
+
+    .message-bubble {
+      background: var(--bubble);
+      color: var(--text);
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 10px 0;
+      max-width: 92%;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    .user-bubble {
+      margin-right: auto; /* RTL: فقاعة المستخدم إلى اليسار بصرياً */
+      background: var(--bubble-user);
+    }
+
+    .article-container {
+      padding: 14px;
+      background: rgba(0, 128, 0, 0.08);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+    body.theme-light .article-container{
+      background: rgba(11,61,11,0.06);
+    }
+
     .signature {
-      margin-top: -60px;
-      font-size: 16px;
-      color: #0f0;
-      text-align: right;
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      text-align: left; /* RTL: التوقيع يظهر يميناً/يساراً حسب رغبتك */
       font-style: italic;
     }
+
     .typing-effect {
       display: inline-block;
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
     }
+
+    .copy-btn {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      padding: 9px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 10px;
+      margin-top: 12px;
+      display: inline-block;
+      transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+    }
+    .copy-btn:hover {
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
+      transform: scale(1.03);
+    }
+
+    /* شريط إدخال ثابت أسفل */
+    #input-container {
+      position: sticky;
+      bottom: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: var(--panel2);
+      border-top: 1px solid var(--border);
+      flex-wrap: nowrap;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      caret-color: var(--border);
+      box-shadow: 0 0 10px rgba(0,255,0,0.15);
+      outline: none;
+    }
+    body.theme-light #userInput{
+      box-shadow: 0 0 10px rgba(11,61,11,0.12);
+    }
+
+    #sendBtn {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--border);
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 10px;
+      white-space: nowrap;
+      transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+    }
+    #sendBtn:hover {
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
+      transform: scale(1.03);
+    }
+
     .notification {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background-color: #0f0;
-      color: #000;
-      padding: 10px 20px;
-      border-radius: 10px;
+      background: var(--border);
+      color: var(--btn-hover-text);
+      padding: 10px 14px;
+      border-radius: 12px;
       font-weight: bold;
-      box-shadow: 0 0 10px #0f0;
-      z-index: 1000;
+      box-shadow: var(--shadow);
+      z-index: 200;
       transition: opacity 0.5s ease-in-out;
+      max-width: calc(100% - 40px);
     }
-    @media screen and (max-width: 600px) {
-      h1 { font-size: 1.2rem; }
-      #userInput, #sendBtn, .copy-btn { width: 100%; margin: 0 0 10px 0; }
+
+    @media (max-width: 600px) {
+      .app{ padding: 8px; }
+      .header h1 { font-size: 1.05rem; }
+      #sendBtn { padding: 12px 14px; font-size: 15px; }
       .message-bubble { max-width: 100%; font-size: 14px; }
     }
   </style>
 </head>
+
 <body>
-  <h1>منصة البحث العلمي</h1>
-  <audio id="background-music" preload="none" controls style="display: none">
-    <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
-  </audio>
-  <div id="chat-container">
-    <div id="conversation"></div>
-    <div id="input-container">
-      <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
-      <button id="sendBtn" onclick="searchWikipedia()">بحث</button>
+  <div class="app">
+    <div class="header">
+      <h1>منصة البحث العلمي</h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات">⚙️</button>
+      </div>
+    </div>
+
+    <audio id="background-music" preload="none" controls style="display:none">
+      <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
+    </audio>
+
+    <div id="chat-container">
+      <div id="conversation"></div>
+      <div id="input-container">
+        <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
+        <button id="sendBtn">بحث</button>
+      </div>
     </div>
   </div>
+
+  <!-- Settings Drawer -->
+  <div class="settings-drawer" id="settingsDrawer" aria-hidden="true">
+    <div class="settings-backdrop" id="settingsBackdrop"></div>
+    <div class="settings-panel" role="dialog" aria-modal="true" aria-label="لوحة الإعدادات">
+      <h2>الإعدادات</h2>
+
+      <div class="setting-row">
+        <div class="label">الوضع</div>
+        <label class="toggle" title="تبديل الوضع ليلي/نهاري">
+          <input type="checkbox" id="themeToggle" />
+          <span class="toggle-pill"></span>
+          <span id="themeLabel">ليلي</span>
+        </label>
+      </div>
+
+      <div class="settings-footer">
+        <button class="btn" id="closeSettingsBtn">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let isMusicPlayed = false;
     let currentSearchResults = [];
 
+    const conversationContainer = document.getElementById('conversation');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // =========================
+    // Auto-scroll (مهم جداً)
+    // =========================
+    function scrollToBottom(smooth = true) {
+      // استهداف نهاية المحتوى بشكل موثوق
+      const behavior = smooth ? 'smooth' : 'auto';
+      conversationContainer.scrollTo({ top: conversationContainer.scrollHeight, behavior });
+    }
+
+    // مراقبة أي إضافة للـ DOM داخل المحادثة والتمرير تلقائياً
+    const observer = new MutationObserver(() => scrollToBottom(true));
+    observer.observe(conversationContainer, { childList: true, subtree: true });
+
+    // =========================
+    // Theme (ليلي/نهاري) + حفظ
+    // =========================
+    const themeToggle = document.getElementById('themeToggle');
+    const themeLabel = document.getElementById('themeLabel');
+
+    function applyTheme(theme) {
+      const isLight = theme === 'light';
+      document.body.classList.toggle('theme-light', isLight);
+      themeToggle.checked = isLight;
+      themeLabel.textContent = isLight ? 'نهاري' : 'ليلي';
+      localStorage.setItem('kefotube_science_theme', theme);
+    }
+
+    // تحميل الثيم المحفوظ
+    (function initTheme(){
+      const saved = localStorage.getItem('kefotube_science_theme') || 'dark';
+      applyTheme(saved);
+    })();
+
+    themeToggle.addEventListener('change', () => {
+      applyTheme(themeToggle.checked ? 'light' : 'dark');
+    });
+
+    // =========================
+    // Settings drawer
+    // =========================
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsDrawer = document.getElementById('settingsDrawer');
+    const settingsBackdrop = document.getElementById('settingsBackdrop');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+    function openSettings(){
+      settingsDrawer.classList.add('open');
+      settingsDrawer.setAttribute('aria-hidden', 'false');
+    }
+    function closeSettings(){
+      settingsDrawer.classList.remove('open');
+      settingsDrawer.setAttribute('aria-hidden', 'true');
+    }
+
+    settingsBtn.addEventListener('click', openSettings);
+    closeSettingsBtn.addEventListener('click', closeSettings);
+    settingsBackdrop.addEventListener('click', closeSettings);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSettings();
+    });
+
+    // =========================
+    // Wikipedia search
+    // =========================
     async function searchWikipedia() {
-      const searchTerm = document.getElementById('userInput').value.trim();
+      const searchTerm = userInput.value.trim();
       if (!searchTerm) {
         showCopyNotification("❗ يرجى كتابة كلمة للبحث");
         return;
       }
+
       if (!isMusicPlayed) {
-        document.getElementById('background-music').play();
+        const audio = document.getElementById('background-music');
+        audio.play().catch(() => { /* تجاهل قيود التشغيل التلقائي */ });
         isMusicPlayed = true;
       }
+
       addMessageToConversation(searchTerm, true);
       addMessageToConversation("جاري البحث...", false);
+
       const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
+
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -185,85 +524,92 @@
       } catch (error) {
         console.error("حدث خطأ أثناء البحث:", error);
         addMessageToConversation("❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.", false);
+      } finally {
+        userInput.value = '';
+        userInput.focus();
       }
     }
 
     function displaySearchResults(results, searchTerm) {
-      const conversationContainer = document.getElementById('conversation');
-      if (results.length === 0) {
+      if (!results || results.length === 0) {
         addMessageToConversation(`لا توجد نتائج لكلمة: "${searchTerm}"`, false);
         return;
       }
+
       currentSearchResults = results;
-      addMessageToConversation("📄 نتائج البحث:", false);
-      results.forEach((result, index) => {
-        const resultText = `${index + 1}. ${result.title}`;
+      addMessageToConversation("📄 نتائج البحث (اضغط على العنوان لعرض الشرح):", false);
+
+      results.slice(0, 10).forEach((result, index) => {
         const resultDiv = document.createElement('div');
         resultDiv.className = 'message-bubble';
-        resultDiv.textContent = resultText;
+        resultDiv.textContent = `${index + 1}. ${result.title}`;
         resultDiv.style.cursor = 'pointer';
+        resultDiv.title = 'اضغط لجلب الشرح';
         resultDiv.onclick = () => fetchFullArticle(result.title);
         conversationContainer.appendChild(resultDiv);
       });
+
+      scrollToBottom(true);
     }
 
     async function fetchFullArticle(title) {
-      const conversationContainer = document.getElementById('conversation');
       addMessageToConversation("🔄 جاري جلب الشرح...", false);
-      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&titles=${encodeURIComponent(title)}&origin=*`;
+
+      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(title)}&origin=*`;
+
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
         const page = Object.values(data.query.pages)[0];
         let extract = page.extract || "لم يتم العثور على شرح.";
-        extract = cleanHTML(extract);
+
         const articleContainer = document.createElement('div');
         articleContainer.className = 'article-container';
+
         const typingEffectDiv = document.createElement('div');
         typingEffectDiv.className = 'typing-effect';
         articleContainer.appendChild(typingEffectDiv);
-        let currentText = '';
-        let wordIndex = 0;
-        const words = extract.split(' ');
+
+        // تأثير كتابة محسّن: حرفياً/كلمة مع تمرير مستمر
+        let i = 0;
+        const speed = 18; // أسرع من السابق لتجربة أفضل
         function typeWriter() {
-          if (wordIndex < words.length) {
-            currentText += words[wordIndex] + ' ';
-            typingEffectDiv.textContent = currentText;
-            wordIndex++;
-            setTimeout(typeWriter, 100);
+          if (i < extract.length) {
+            typingEffectDiv.textContent += extract.charAt(i);
+            i++;
+            scrollToBottom(false); // بدون سلاسة لتفادي "اهتزاز" أثناء الكتابة
+            setTimeout(typeWriter, speed);
           } else {
             const signature = document.createElement('div');
             signature.className = 'signature';
             signature.textContent = "بقلم زكريا كيفو";
             articleContainer.appendChild(signature);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = "نسخ النتيجة";
+            copyBtn.onclick = () => copyToClipboard(extract + "\nبقلم زكريا كيفو");
+            articleContainer.appendChild(copyBtn);
+
+            scrollToBottom(true);
           }
         }
+
         typeWriter();
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn';
-        copyBtn.textContent = "نسخ النتيجة";
-        copyBtn.onclick = () => copyToClipboard(extract + "\nبقلم زكريا كيفو");
-        articleContainer.appendChild(copyBtn);
         conversationContainer.appendChild(articleContainer);
-        conversationContainer.scrollTop = conversationContainer.scrollHeight;
+        scrollToBottom(true);
       } catch (error) {
         console.error("حدث خطأ أثناء جلب الشرح:", error);
         addMessageToConversation("❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.", false);
       }
     }
 
-    function cleanHTML(text) {
-      const doc = new DOMParser().parseFromString(text, 'text/html');
-      return doc.body.textContent || "";
-    }
-
     function addMessageToConversation(message, isUser = false) {
-      const conversationContainer = document.getElementById('conversation');
       const messageDiv = document.createElement('div');
       messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
       messageDiv.textContent = message;
       conversationContainer.appendChild(messageDiv);
-      conversationContainer.scrollTop = conversationContainer.scrollHeight;
+      scrollToBottom(true);
     }
 
     function copyToClipboard(text) {
@@ -280,17 +626,32 @@
       notification.className = 'notification';
       notification.textContent = message;
       document.body.appendChild(notification);
+
       setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => { notification.remove(); }, 500);
       }, 2000);
     }
 
+    // =========================
+    // Events: زر البحث + Enter
+    // =========================
+    sendBtn.addEventListener('click', searchWikipedia);
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchWikipedia();
+    });
+
+    // =========================
+    // منع النسخ (كما طلبت سابقاً)
+    // =========================
     document.addEventListener("contextmenu", e => e.preventDefault());
     document.addEventListener("selectstart", e => e.preventDefault());
     document.addEventListener("touchstart", e => {
       if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
+
+    // بداية: رسالة ترحيب
+    addMessageToConversation("اكتب كلمة أو مصطلحاً علمياً وسأعرض لك نتائج ويكيبيديا العربية.", false);
   </script>
 </body>
 </html>
