@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>منصة البحث العلمي - واجهة دردشة تقنية</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #000;
+      color: #0f0;
+      margin: 0 auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      max-width: 100%;
+    }
+    h1 {
+      margin: 10px 0;
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
+      text-align: center;
+    }
+    #chat-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      border: 1px solid #0f0;
+      background-color: rgba(0, 0, 0, 0.8);
+      border-radius: 10px;
+      box-shadow: 0 0 20px #0f0;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #conversation {
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.9);
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      direction: rtl;
+    }
+    .message-bubble {
+      background-color: rgba(0, 128, 0, 0.2);
+      color: #0f0;
+      padding: 10px;
+      border: 1px solid #0f0;
+      border-radius: 5px;
+      margin: 10px 0;
+      max-width: 90%;
+      word-wrap: break-word;
+    }
+    .user-bubble {
+      align-self: flex-end;
+      background-color: rgba(0, 255, 0, 0.3);
+    }
+    #input-container {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.9);
+      border-top: 1px solid #0f0;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      flex-wrap: wrap;
+    }
+    #userInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #0f0;
+      border-radius: 5px;
+      background-color: #000;
+      color: #0f0;
+      caret-color: #0f0;
+      box-shadow: 0 0 10px #0f0;
+      margin-bottom: 10px;
+    }
+    #sendBtn {
+      background-color: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    #sendBtn:hover {
+      background-color: #0f0;
+      color: #000;
+      transform: scale(1.1);
+    }
+    .copy-btn {
+      background-color: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 8px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 12px;
+      display: inline-block;
+      text-align: center;
+    }
+    .copy-btn:hover {
+      background-color: #0f0;
+      color: #000;
+      transform: scale(1.05);
+    }
+    .article-container {
+      padding: 20px;
+      background-color: rgba(0, 128, 0, 0.1);
+      border: 1px solid #0f0;
+      border-radius: 5px;
+      margin: 15px 0;
+    }
+    .signature {
+      margin-top: -60px;
+      font-size: 16px;
+      color: #0f0;
+      text-align: right;
+      font-style: italic;
+    }
+    .typing-effect {
+      display: inline-block;
+      white-space: pre-wrap;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #0f0;
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      box-shadow: 0 0 10px #0f0;
+      z-index: 1000;
+      transition: opacity 0.5s ease-in-out;
+    }
+    @media screen and (max-width: 600px) {
+      h1 { font-size: 1.2rem; }
+      #userInput, #sendBtn, .copy-btn { width: 100%; margin: 0 0 10px 0; }
+      .message-bubble { max-width: 100%; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>منصة البحث العلمي</h1>
+  <audio id="background-music" preload="none" controls style="display: none">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
+  </audio>
+  <div id="chat-container">
+    <div id="conversation"></div>
+    <div id="input-container">
+      <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
+      <button id="sendBtn" onclick="searchWikipedia()">بحث</button>
+    </div>
+  </div>
+  <script>
+    let isMusicPlayed = false;
+    let currentSearchResults = [];
+
+    async function searchWikipedia() {
+      const searchTerm = document.getElementById('userInput').value.trim();
+      if (!searchTerm) {
+        showCopyNotification("❗ يرجى كتابة كلمة للبحث");
+        return;
+      }
+      if (!isMusicPlayed) {
+        document.getElementById('background-music').play();
+        isMusicPlayed = true;
+      }
+      addMessageToConversation(searchTerm, true);
+      addMessageToConversation("جاري البحث...", false);
+      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        displaySearchResults(data.query.search, searchTerm);
+      } catch (error) {
+        console.error("حدث خطأ أثناء البحث:", error);
+        addMessageToConversation("❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.", false);
+      }
+    }
+
+    function displaySearchResults(results, searchTerm) {
+      const conversationContainer = document.getElementById('conversation');
+      if (results.length === 0) {
+        addMessageToConversation(`لا توجد نتائج لكلمة: "${searchTerm}"`, false);
+        return;
+      }
+      currentSearchResults = results;
+      addMessageToConversation("📄 نتائج البحث:", false);
+      results.forEach((result, index) => {
+        const resultText = `${index + 1}. ${result.title}`;
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'message-bubble';
+        resultDiv.textContent = resultText;
+        resultDiv.style.cursor = 'pointer';
+        resultDiv.onclick = () => fetchFullArticle(result.title);
+        conversationContainer.appendChild(resultDiv);
+      });
+    }
+
+    async function fetchFullArticle(title) {
+      const conversationContainer = document.getElementById('conversation');
+      addMessageToConversation("🔄 جاري جلب الشرح...", false);
+      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&titles=${encodeURIComponent(title)}&origin=*`;
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const page = Object.values(data.query.pages)[0];
+        let extract = page.extract || "لم يتم العثور على شرح.";
+        extract = cleanHTML(extract);
+        const articleContainer = document.createElement('div');
+        articleContainer.className = 'article-container';
+        const typingEffectDiv = document.createElement('div');
+        typingEffectDiv.className = 'typing-effect';
+        articleContainer.appendChild(typingEffectDiv);
+        let currentText = '';
+        let wordIndex = 0;
+        const words = extract.split(' ');
+        function typeWriter() {
+          if (wordIndex < words.length) {
+            currentText += words[wordIndex] + ' ';
+            typingEffectDiv.textContent = currentText;
+            wordIndex++;
+            setTimeout(typeWriter, 100);
+          } else {
+            const signature = document.createElement('div');
+            signature.className = 'signature';
+            signature.textContent = "بقلم زكريا كيفو";
+            articleContainer.appendChild(signature);
+          }
+        }
+        typeWriter();
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = "نسخ النتيجة";
+        copyBtn.onclick = () => copyToClipboard(extract + "\nبقلم زكريا كيفو");
+        articleContainer.appendChild(copyBtn);
+        conversationContainer.appendChild(articleContainer);
+        conversationContainer.scrollTop = conversationContainer.scrollHeight;
+      } catch (error) {
+        console.error("حدث خطأ أثناء جلب الشرح:", error);
+        addMessageToConversation("❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.", false);
+      }
+    }
+
+    function cleanHTML(text) {
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      return doc.body.textContent || "";
+    }
+
+    function addMessageToConversation(message, isUser = false) {
+      const conversationContainer = document.getElementById('conversation');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
+      messageDiv.textContent = message;
+      conversationContainer.appendChild(messageDiv);
+      conversationContainer.scrollTop = conversationContainer.scrollHeight;
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => { showCopyNotification("✅ تم نسخ النص!"); })
+        .catch(err => {
+          console.error('خطأ في النسخ:', err);
+          showCopyNotification("❌ لم يتم النسخ!");
+        });
+    }
+
+    function showCopyNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => { notification.remove(); }, 500);
+      }, 2000);
+    }
+
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("selectstart", e => e.preventDefault());
+    document.addEventListener("touchstart", e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+  </script>
+</body>
+</html>
