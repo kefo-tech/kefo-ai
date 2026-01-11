@@ -4,52 +4,37 @@
   <!-- =========================
        [SEO/HEAD] إعدادات أساسية + SEO
        =========================
-       الهدف: تحسين ظهور الموقع في Google + تحسين المشاركة على الشبكات.
+       - title/description/canonical: لظهور أفضل في Google
+       - Open Graph: مشاركة أفضل
+       - JSON-LD: تعريف الموقع لمحركات البحث
   -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>KeFo.tech | KeFo AI - One Word Search AI | Zakaria KeFo | زكريا كيفو</title>
-
-  <!-- وصف مختصر: يظهر غالباً تحت نتيجة Google -->
-  <meta name="description" content="KeFo AI من KeFo.tech: منصة بحث ذكية بكلمة واحدة (One Word Search AI) تعتمد على Wikipedia API. تطوير: Zakaria KeFo (زكريا كيفو). كلمات مفتاحية: KeFo ai, KeFo.tech, one word search ai, البحث بكلمة واحدة." />
-
-  <!-- canonical مهم لتفادي تكرار النسخ في الأرشفة -->
+  <meta name="description" content="KeFo AI من KeFo.tech: منصة بحث ذكية بكلمة واحدة (One Word Search AI) تعتمد على Wikipedia API. تطوير: Zakaria KeFo (زكريا كيفو)." />
   <link rel="canonical" href="https://kefo-tech.github.io/kefo-ai/" />
 
-  <!-- Open Graph -->
   <meta property="og:title" content="KeFo.tech | KeFo AI - One Word Search AI" />
-  <meta property="og:description" content="منصة بحث ذكية مجانية تعتمد على ويكيبيديا. تطوير: Zakaria KeFo (زكريا كيفو) | KeFo.tech" />
+  <meta property="og:description" content="منصة بحث بكلمة واحدة عبر ويكيبيديا. تطوير: Zakaria KeFo | KeFo.tech" />
   <meta property="og:url" content="https://kefo-tech.github.io/kefo-ai/" />
   <meta property="og:type" content="website" />
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="KeFo.tech | KeFo AI - One Word Search AI" />
-  <meta name="twitter:description" content="بحث بكلمة واحدة عبر Wikipedia API. Zakaria KeFo | زكريا كيفو | KeFo.tech" />
-
-  <!-- JSON-LD: تعريف الموقع لمحركات البحث -->
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "KeFo.tech - KeFo AI",
-    "url": "https://kefo-tech.github.io/kefo-ai/",
-    "alternateName": [
-      "KeFo AI",
-      "KeFo.tech",
-      "KeFo ai",
-      "Zakaria KeFo",
-      "زكريا كيفو",
-      "One Word Search AI",
-      "البحث بكلمة واحدة"
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"KeFo.tech - KeFo AI",
+    "url":"https://kefo-tech.github.io/kefo-ai/",
+    "alternateName":[
+      "KeFo AI","KeFo.tech","KeFo ai","Zakaria KeFo","زكريا كيفو","One Word Search AI","البحث بكلمة واحدة"
     ],
-    "description": "One Word Search AI platform powered by Wikipedia API. منصة بحث ذكية تعتمد على ويكيبيديا."
+    "description":"One Word Search AI platform powered by Wikipedia API. منصة بحث ذكية تعتمد على ويكيبيديا."
   }
   </script>
 
   <!-- =========================
-       [Fonts] خطوط للوضع النهاري
+       [Fonts] للوضع النهاري
        ========================= -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,21 +42,17 @@
 
   <style>
     /* =========================
-       [1] Reset + منع تمرير الصفحة
+       [0] Reset + منع تمرير الصفحة
        =========================
-       هذا هو الحل الجذري لمشكلة "النتيجة تنزل وتدفع الشاشة للأسفل":
-       - نمنع scroll على body/html
-       - ونسمح بالتمرير فقط داخل #conversation
+       حل مشكلة نزول الصفحة أثناء الطباعة:
+       - منع scroll على body/html
+       - والسكرول فقط داخل #conversation
     */
     *, *::before, *::after { box-sizing: border-box; }
-
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
+    html, body { height: 100%; overflow: hidden; }
 
     /* =========================
-       [2] Variables (Dark Theme)
+       [1] CSS Variables
        ========================= */
     :root{
       --bg: #000;
@@ -83,19 +64,22 @@
       --bubble-user: rgba(0,255,0,0.3);
       --shadow: 0 0 20px var(--border);
       --muted: rgba(0,255,0,0.75);
+
       --btn-bg: #000;
       --btn-text: #0f0;
       --btn-hover-bg: #0f0;
       --btn-hover-text: #000;
+
       --font: "Courier New", Courier, monospace;
       --maxw: 720px;
+
+      /* مساحة أسفل المحادثة (سيتم حسابها من JS بدقة) */
+      --bottom-safe: 150px;
     }
 
     /* =========================
-       [3] Light Theme
-       =========================
-       طلبت خط واضح للوضع النهاري + قراءة أفضل.
-    */
+       [2] Light Theme
+       ========================= */
     body.theme-light{
       --bg: #f7f9ff;
       --text: #102a10;
@@ -106,46 +90,49 @@
       --bubble-user: rgba(21,58,21,0.12);
       --shadow: 0 10px 26px rgba(0,0,0,0.12);
       --muted: rgba(16,42,16,0.7);
+
       --btn-bg: #ffffff;
       --btn-text: #153a15;
       --btn-hover-bg: #153a15;
       --btn-hover-text: #ffffff;
+
       --font: "Cairo", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     }
 
     /* =========================
-       [4] Body + App layout
+       [3] Base layout
        ========================= */
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
+    body{
       margin: 0;
       padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
       user-select: none;
       display: flex;
       justify-content: center;
     }
 
-    /*
-      .app:
-      - مساحة سفلية كافية لشريط الإدخال + الحقوق
-    */
-    .app {
+    .app{
       width: 100%;
       max-width: var(--maxw);
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
       padding: 10px;
-      padding-bottom: 160px;
       gap: 10px;
+
+      /* IMPORTANT:
+         لم نعد نضع padding-bottom كبير هنا.
+         الحجز السفلي صار داخل #conversation عبر --bottom-safe
+      */
+      padding-bottom: 10px;
     }
 
     /* =========================
-       [5] Header
+       [4] Header
        ========================= */
-    .header {
+    .header{
       position: sticky;
       top: 0;
       z-index: 50;
@@ -159,22 +146,19 @@
       justify-content: space-between;
       gap: 10px;
     }
-
     .header h1{
       margin: 0;
       font-size: 1.15rem;
-      text-shadow: 0 0 10px var(--border), 0 0 20px var(--border);
       line-height: 1.2;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-shadow: 0 0 10px var(--border), 0 0 20px var(--border);
     }
-
     .header-actions{
       display: flex;
       gap: 8px;
       align-items: center;
-      flex-wrap: nowrap;
     }
 
     .icon-btn{
@@ -199,32 +183,33 @@
     }
 
     /* =========================
-       [6] Chat container + Conversation (scroll هنا فقط)
+       [5] Chat Container
        ========================= */
-    #chat-container {
+    #chat-container{
+      flex: 1;
+      min-height: 0;
       border: 1px solid var(--border);
-      background: var(--panel);
       border-radius: 12px;
       box-shadow: var(--shadow);
       overflow: hidden;
+      background: var(--panel);
       display: flex;
       flex-direction: column;
-      flex: 1;
-      min-height: 0;
     }
 
-    #conversation {
+    #conversation{
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
       padding: 12px;
       background: var(--panel2);
-      overflow-y: auto;
-      flex: 1;
-      min-height: 0;
-      scroll-behavior: auto;
       overscroll-behavior: contain;
-      direction: rtl;
+
+      /* هذا هو الحجز الصحيح لمنع تغطية النتائج تحت شريط الإدخال */
+      padding-bottom: var(--bottom-safe);
     }
 
-    .message-bubble {
+    .message-bubble{
       background: var(--bubble);
       color: var(--text);
       padding: 10px;
@@ -235,13 +220,12 @@
       word-wrap: break-word;
       line-height: 1.7;
     }
-
-    .user-bubble {
+    .user-bubble{
       margin-right: auto;
       background: var(--bubble-user);
     }
 
-    .article-container {
+    .article-container{
       padding: 14px;
       background: rgba(0, 128, 0, 0.08);
       border: 1px solid var(--border);
@@ -250,9 +234,8 @@
     }
     body.theme-light .article-container{ background: rgba(21,58,21,0.06); }
 
-    .typing-effect { white-space: pre-wrap; }
-
-    .signature {
+    .typing-effect{ white-space: pre-wrap; }
+    .signature{
       margin-top: 8px;
       font-size: 14px;
       color: var(--muted);
@@ -260,7 +243,7 @@
       font-style: italic;
     }
 
-    .copy-btn {
+    .copy-btn{
       background: var(--btn-bg);
       color: var(--btn-text);
       border: 1px solid var(--border);
@@ -272,20 +255,50 @@
       display: inline-block;
       transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
     }
-    .copy-btn:hover {
+    .copy-btn:hover{
       background: var(--btn-hover-bg);
       color: var(--btn-hover-text);
       transform: scale(1.03);
     }
 
     /* =========================
-       [7] Input Bar (Fixed bottom)
+       [6] SEO Inline Block (يختفي بعد أول بحث)
+       =========================
+       - كان شكله غير مناسب في الصفحة
+       - الآن: يظهر في البداية فقط، ثم يختفي بعد أول بحث
+    */
+    .seo-inline{
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      font-size: 12px;
+      opacity: 0.85;
+      line-height: 1.7;
+
+      transition: opacity .25s ease, transform .25s ease, max-height .25s ease, margin .25s ease, padding .25s ease;
+      max-height: 200px;
+    }
+    .seo-inline.hidden{
+      opacity: 0;
+      transform: translateY(8px);
+      max-height: 0;
+      margin-top: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
+      overflow: hidden;
+    }
+
+    /* =========================
+       [7] Input Bar (Fixed)
        ========================= */
-    #input-container {
+    #input-container{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 34px;
+      bottom: 34px; /* فوق سطر الحقوق */
       width: calc(100% - 20px);
       max-width: var(--maxw);
       z-index: 60;
@@ -300,7 +313,7 @@
       box-shadow: var(--shadow);
     }
 
-    #userInput {
+    #userInput{
       flex: 1;
       padding: 12px;
       font-size: 16px;
@@ -312,7 +325,7 @@
       outline: none;
     }
 
-    #sendBtn {
+    #sendBtn{
       background: var(--btn-bg);
       color: var(--btn-text);
       border: 1px solid var(--border);
@@ -323,17 +336,15 @@
       white-space: nowrap;
       transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
     }
-    #sendBtn:hover {
+    #sendBtn:hover{
       background: var(--btn-hover-bg);
       color: var(--btn-hover-text);
       transform: scale(1.03);
     }
 
     /* =========================
-       [8] Copyright Bar (Fixed)
-       =========================
-       سيتم ملؤه بالنص حسب لغة الجهاز عبر JS.
-    */
+       [8] Copyright Bar (Fixed, مترجم)
+       ========================= */
     #copyright-bar{
       position: fixed;
       left: 50%;
@@ -361,9 +372,9 @@
     }
 
     /* =========================
-       [9] Notifications
+       [9] Notification
        ========================= */
-    .notification {
+    .notification{
       position: fixed;
       bottom: 140px;
       right: 20px;
@@ -433,7 +444,7 @@
       cursor: pointer;
       user-select: none;
     }
-    .toggle input{ display:none; }
+    .toggle input{ display: none; }
 
     .toggle-pill{
       width: 54px;
@@ -486,24 +497,7 @@
     }
 
     /* =========================
-       [11] About SEO block (مرئي لكن لطيف)
-       =========================
-       مهم لمحركات البحث: نص حقيقي يمكن قراءته، بدون إفساد التصميم.
-       وضعته داخل Drawer "About" + سنضيف فقرة قصيرة أيضاً داخل الصفحة.
-    */
-    .seo-inline{
-      font-size: 12px;
-      opacity: 0.85;
-      line-height: 1.7;
-      margin-top: 6px;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      background: var(--panel);
-    }
-
-    /* =========================
-       [12] Language Modal (First run)
+       [11] Language Modal
        ========================= */
     .lang-modal{
       position: fixed;
@@ -558,38 +552,36 @@
     }
 
     .lang-left{
-      display:flex;
-      align-items:center;
-      gap:10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
     .flag{ font-size: 20px; line-height: 1; }
     .lang-name{ font-weight: 700; }
     .lang-code{ font-size: 12px; opacity: 0.8; }
 
     /* =========================
-       [13] Responsive
+       [12] Responsive
        ========================= */
-    @media (max-width: 600px) {
-      .app{ padding: 8px; padding-bottom: 170px; }
-      .header h1 { font-size: 1.05rem; }
-      #sendBtn { padding: 12px 14px; font-size: 15px; }
-      .message-bubble { max-width: 100%; font-size: 14px; }
-      #input-container { width: calc(100% - 16px); bottom: 34px; }
-      #copyright-bar { width: calc(100% - 16px); }
+    @media (max-width: 600px){
+      .app{ padding: 8px; }
+      .header h1{ font-size: 1.05rem; }
+      #sendBtn{ padding: 12px 14px; font-size: 15px; }
+      .message-bubble{ max-width: 100%; font-size: 14px; }
+      #input-container{ width: calc(100% - 16px); }
+      #copyright-bar{ width: calc(100% - 16px); }
     }
   </style>
 </head>
 
 <body>
   <!-- =========================
-       [APP] Header + Chat
-       ========================= -->
+       [APP]
+  ========================== -->
   <div class="app">
     <div class="header">
       <h1 id="appTitle">KeFo AI</h1>
 
-      <!-- أزرار أعلى: About + Donate + Settings -->
       <div class="header-actions">
         <button class="icon-btn" id="aboutBtn" title="حول المشروع" aria-label="حول">ℹ️</button>
         <button class="icon-btn" id="donateBtn" title="تبرع للمشروع" aria-label="تبرع">💚</button>
@@ -602,39 +594,33 @@
       <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
     </audio>
 
-    <!-- صندوق المحادثة -->
+    <!-- المحادثة -->
     <div id="chat-container">
       <div id="conversation">
-        <!-- Anchor: يبقي آخر سطر ظاهر دائماً -->
         <div id="bottomAnchor" style="height:1px;"></div>
       </div>
     </div>
 
-    <!-- =========================
-         [SEO Inline Text]
-         =========================
-         كتلة نص صغيرة ومرئية لمحركات البحث (لا تزعج المستخدم).
-         سيتم ترجمتها حسب لغة الجهاز.
-    -->
+    <!-- SEO Inline (يختفي بعد أول بحث) -->
     <div class="seo-inline" id="seoInlineText"></div>
   </div>
 
   <!-- =========================
-       [INPUT] شريط إدخال ثابت
-       ========================= -->
+       [INPUT] ثابت
+  ========================== -->
   <div id="input-container">
     <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
     <button id="sendBtn">بحث</button>
   </div>
 
   <!-- =========================
-       [COPYRIGHT] سطر حقوق ثابت (مترجم حسب لغة الجهاز)
-       ========================= -->
+       [COPYRIGHT] ثابت + مترجم
+  ========================== -->
   <div id="copyright-bar"></div>
 
   <!-- =========================
-       [DRAWER] Settings
-       ========================= -->
+       [SETTINGS DRAWER]
+  ========================== -->
   <div class="drawer" id="settingsDrawer" aria-hidden="true">
     <div class="drawer-backdrop" id="settingsBackdrop"></div>
 
@@ -665,8 +651,8 @@
   </div>
 
   <!-- =========================
-       [DRAWER] Donate (PayPal)
-       ========================= -->
+       [DONATE DRAWER] PayPal
+  ========================== -->
   <div class="drawer" id="donateDrawer" aria-hidden="true">
     <div class="drawer-backdrop" id="donateBackdrop"></div>
 
@@ -676,7 +662,6 @@
       <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:10px;">
         <div id="donateText" style="line-height:1.8;"></div>
 
-        <!-- رابط PayPal الذي زوّدتني به -->
         <a id="paypalDonateLink" class="btn"
            target="_blank" rel="noopener"
            href="https://py.pl/1T9xYzLe4cnWzyr45JFynw">
@@ -693,8 +678,8 @@
   </div>
 
   <!-- =========================
-       [DRAWER] About (SEO + شرح المشروع)
-       ========================= -->
+       [ABOUT DRAWER]
+  ========================== -->
   <div class="drawer" id="aboutDrawer" aria-hidden="true">
     <div class="drawer-backdrop" id="aboutBackdrop"></div>
 
@@ -703,11 +688,9 @@
 
       <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:10px;">
         <div id="aboutText" style="line-height:1.9;"></div>
-
         <div style="font-size:12px; opacity:.85;" id="aboutKeywords"></div>
 
-        <a class="btn" target="_blank" rel="noopener"
-           href="https://kefo-tech.github.io/kefo-ai/">
+        <a class="btn" target="_blank" rel="noopener" href="https://kefo-tech.github.io/kefo-ai/">
           KeFo.tech / KeFo AI
         </a>
       </div>
@@ -720,7 +703,7 @@
 
   <!-- =========================
        [LANG MODAL] اختيار لغة نتائج ويكيبيديا (مرة واحدة)
-       ========================= -->
+  ========================== -->
   <div class="lang-modal" id="langModal">
     <div class="lang-card">
       <h3 id="langPrompt">اختر لغة النتائج</h3>
@@ -768,7 +751,7 @@
 
   <script>
     /* =========================
-       [1] DOM References + Storage
+       [A] عناصر الصفحة + التخزين
        ========================= */
     const conversationContainer = document.getElementById('conversation');
     const bottomAnchor = document.getElementById('bottomAnchor');
@@ -802,29 +785,52 @@
     const seoInlineText = document.getElementById('seoInlineText');
     const copyrightBar = document.getElementById('copyright-bar');
 
-    const STORAGE_THEME = 'kefotube_science_theme';
-    const STORAGE_LANG  = 'kefotube_science_lang';
+    const STORAGE_THEME = 'kefo_ai_theme';
+    const STORAGE_LANG  = 'kefo_ai_wiki_lang';
+    const STORAGE_HIDE_SEO = 'kefo_ai_hide_seo_inline';
 
     let isMusicPlayed = false;
-    let wikiLang = 'ar'; // لغة نتائج ويكيبيديا
+    let wikiLang = 'ar'; // لغة نتائج ويكيبيديا (ar/en/de)
 
     /* =========================
-       [2] إبقاء آخر سطر/حرف ظاهر دائماً
+       [B] أهم وظيفة: إبقاء آخر سطر ظاهر دائماً
        ========================= */
     function keepLastLineVisible() {
       bottomAnchor.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
 
     /* =========================
-       [3] Drawer helpers
+       [C] إصلاح الفراغ: حساب bottom-safe بدقة
+       =========================
+       - بدل padding-bottom كبير في الصفحة
+       - نحجز فقط داخل #conversation بقيمة (ارتفاع input + حقوق + مسافة صغيرة)
+    */
+    function updateBottomSafeSpace(){
+      const inputBar = document.getElementById('input-container');
+      const copyBar  = document.getElementById('copyright-bar');
+
+      const inputH = inputBar ? inputBar.offsetHeight : 0;
+      const copyH  = copyBar ? copyBar.offsetHeight : 0;
+
+      // مسافة راحة بسيطة
+      const safe = inputH + copyH + 14;
+      document.documentElement.style.setProperty('--bottom-safe', safe + 'px');
+    }
+    window.addEventListener('load', updateBottomSafeSpace);
+    window.addEventListener('resize', updateBottomSafeSpace);
+
+    /* =========================
+       [D] Drawer helpers
        ========================= */
     function openDrawer(drawer){
       drawer.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');
+      updateBottomSafeSpace();
     }
     function closeDrawer(drawer){
       drawer.classList.remove('open');
       drawer.setAttribute('aria-hidden', 'true');
+      updateBottomSafeSpace();
     }
 
     settingsBtn.addEventListener('click', () => openDrawer(settingsDrawer));
@@ -849,7 +855,7 @@
     });
 
     /* =========================
-       [4] Theme (ليلي/نهاري)
+       [E] Theme
        ========================= */
     function applyTheme(theme) {
       const isLight = theme === 'light';
@@ -857,6 +863,9 @@
       themeToggle.checked = isLight;
       themeLabel.textContent = isLight ? 'نهاري' : 'ليلي';
       localStorage.setItem(STORAGE_THEME, theme);
+
+      // أحياناً يتغير ارتفاع الخط في النهاري، فنحدّث الحجز
+      setTimeout(updateBottomSafeSpace, 0);
     }
 
     (function initTheme(){
@@ -869,10 +878,8 @@
     });
 
     /* =========================
-       [5] UI language (لغة الجهاز)
-       =========================
-       هذه اللغة تستخدم للنصوص: التبرع/حول/الحقوق/الرسائل... إلخ
-    */
+       [F] UI language (لغة الجهاز) للنصوص
+       ========================= */
     function getDeviceUILang(){
       const l = (navigator.language || 'en').toLowerCase();
       if (l.startsWith('ar')) return 'ar';
@@ -882,7 +889,7 @@
     const uiLang = getDeviceUILang();
 
     /* =========================
-       [6] i18n texts
+       [G] النصوص حسب لغة الجهاز
        ========================= */
     const uiText = {
       ar: {
@@ -923,6 +930,7 @@
                     الفكرة: <b>البحث بكلمة واحدة</b> وإظهار شرح مختصر بسرعة داخل واجهة دردشة.<br/>
                     المطور: <b>Zakaria KeFo</b> (زكريا كيفو) — مطوّر سوري، والمشروع مجاني.`,
         aboutKeywords: `كلمات مفتاحية: KeFo ai, KeFo.tech, Zakaria Kefo, زكريا كيفو, البحث بكلمة واحدة, One Word Search AI`,
+
         seoInline: `KeFo.tech / KeFo AI — منصة بحث بكلمة واحدة (One Word Search AI) تعتمد على Wikipedia API. تطوير: Zakaria KeFo (زكريا كيفو).`,
         copyrightHtml: `جميع الحقوق محفوظة © <a href="https://kefo.tech" target="_blank" rel="noopener">KeFo.tech</a>`
       },
@@ -964,6 +972,7 @@
                     Idea: <b>One Word Search AI</b> with fast summaries in a chat-style UI.<br/>
                     Developer: <b>Zakaria KeFo</b> (Syrian developer). This project is free.`,
         aboutKeywords: `Keywords: KeFo ai, KeFo.tech, Zakaria Kefo, زكريا كيفو, one word search ai, البحث بكلمة واحدة`,
+
         seoInline: `KeFo.tech / KeFo AI — One Word Search AI powered by the Wikipedia API. Built by Zakaria KeFo (زكريا كيفو).`,
         copyrightHtml: `All rights reserved © <a href="https://kefo.tech" target="_blank" rel="noopener">KeFo.tech</a>`
       },
@@ -1005,6 +1014,7 @@
                     Idee: <b>One Word Search AI</b> mit schnellen Kurzinfos im Chat-Design.<br/>
                     Entwickler: <b>Zakaria KeFo</b> (syrischer Entwickler). Dieses Projekt ist kostenlos.`,
         aboutKeywords: `Schlüsselwörter: KeFo ai, KeFo.tech, Zakaria Kefo, زكريا كيفو, One Word Search AI, البحث بكلمة واحدة`,
+
         seoInline: `KeFo.tech / KeFo AI — One Word Search AI basierend auf der Wikipedia API. Entwickelt von Zakaria KeFo (زكريا كيفو).`,
         copyrightHtml: `Alle Rechte vorbehalten © <a href="https://kefo.tech" target="_blank" rel="noopener">KeFo.tech</a>`
       }
@@ -1013,7 +1023,7 @@
     function T(key, ...args){
       const pack = uiText[uiLang] || uiText.en;
       const v = pack[key];
-      return typeof v === 'function' ? v(...args) : v;
+      return (typeof v === 'function') ? v(...args) : v;
     }
 
     function applyUIText(){
@@ -1021,7 +1031,7 @@
       userInput.placeholder = T('inputPlaceholder');
       sendBtn.textContent = T('searchBtn');
 
-      // Settings labels
+      // Settings
       document.getElementById('settingsTitle').textContent = T('settingsTitle');
       document.getElementById('themeRowLabel').textContent = T('mode');
       document.getElementById('langRowLabel').textContent = T('language');
@@ -1041,22 +1051,40 @@
       document.getElementById('aboutKeywords').textContent = T('aboutKeywords');
       closeAboutBtn.textContent = T('close');
 
-      // Language modal
+      // Lang modal
       langPrompt.textContent = T('langPrompt');
       document.getElementById('langHint').textContent = T('langHint');
 
-      // Current wiki language label
+      // current wiki lang
       currentLangLabel.textContent = T('currentLang', wikiLang);
 
       // SEO inline text
       seoInlineText.textContent = T('seoInline');
 
-      // Copyright localized (باللغات الثلاث)
+      // Copyright localized
       copyrightBar.innerHTML = T('copyrightHtml');
+
+      // بعد تغيير النصوص ربما يتغير ارتفاع الحقوق => حدث الحجز
+      setTimeout(updateBottomSafeSpace, 0);
     }
 
     /* =========================
-       [7] Language modal (Wikipedia language)
+       [H] إخفاء كتلة SEO بعد أول بحث (مع حفظ)
+       ========================= */
+    function hideSeoInline(){
+      seoInlineText.classList.add('hidden');
+      localStorage.setItem(STORAGE_HIDE_SEO, '1');
+      setTimeout(updateBottomSafeSpace, 0);
+    }
+
+    (function initSeoInlineVisibility(){
+      if (localStorage.getItem(STORAGE_HIDE_SEO) === '1') {
+        seoInlineText.classList.add('hidden');
+      }
+    })();
+
+    /* =========================
+       [I] Wikipedia language modal
        ========================= */
     function openLangModal(){ langModal.classList.add('open'); }
     function closeLangModal(){ langModal.classList.remove('open'); }
@@ -1065,7 +1093,7 @@
       wikiLang = langCode;
       localStorage.setItem(STORAGE_LANG, langCode);
 
-      // اتجاه المحادثة حسب لغة النتائج
+      // اتجاه المحادثة: عربي RTL، غيره LTR
       conversationContainer.style.direction = (wikiLang === 'ar') ? 'rtl' : 'ltr';
 
       applyUIText();
@@ -1093,14 +1121,14 @@
     })();
 
     /* =========================
-       [8] Wikipedia API helpers
+       [J] Wikipedia API base URL
        ========================= */
     function wikiBase(){
       return `https://${wikiLang}.wikipedia.org/w/api.php`;
     }
 
     /* =========================
-       [9] Conversation helpers
+       [K] رسائل + إشعارات + نسخ
        ========================= */
     function addMessageToConversation(message, isUser = false) {
       const messageDiv = document.createElement('div');
@@ -1130,7 +1158,7 @@
     }
 
     /* =========================
-       [10] Search Wikipedia
+       [L] البحث في ويكيبيديا
        ========================= */
     async function searchWikipedia() {
       const searchTerm = userInput.value.trim();
@@ -1139,6 +1167,10 @@
         return;
       }
 
+      // إخفاء SEO inline بعد أول بحث فقط
+      if (localStorage.getItem(STORAGE_HIDE_SEO) !== '1') hideSeoInline();
+
+      // موسيقى أول مرة فقط (اختياري)
       if (!isMusicPlayed) {
         const audio = document.getElementById('background-music');
         audio.play().catch(() => {});
@@ -1186,7 +1218,7 @@
     }
 
     /* =========================
-       [11] Fetch summary + typing effect
+       [M] جلب الشرح + تأثير الكتابة
        ========================= */
     async function fetchFullArticle(title) {
       addMessageToConversation(T('fetching'), false);
@@ -1242,7 +1274,7 @@
     }
 
     /* =========================
-       [12] Events
+       [N] Events (زر بحث + Enter)
        ========================= */
     sendBtn.addEventListener('click', searchWikipedia);
     userInput.addEventListener('keydown', (e) => {
@@ -1250,7 +1282,7 @@
     });
 
     /* =========================
-       [13] Anti-copy (اختياري)
+       [O] منع النسخ (اختياري)
        ========================= */
     document.addEventListener("contextmenu", e => e.preventDefault());
     document.addEventListener("selectstart", e => e.preventDefault());
@@ -1259,28 +1291,12 @@
     }, { passive: false });
 
     /* =========================
-       [14] Init UI text + welcome message
+       [P] Init UI + رسالة ترحيب
        ========================= */
     applyUIText();
     addMessageToConversation(T('welcomeMsg'), false);
-
-    /* =========================
-       [15] Theme label update
-       ========================= */
-    (function initThemeLabel(){
-      themeLabel.textContent = document.body.classList.contains('theme-light') ? 'نهاري' : 'ليلي';
-    })();
-
-    /* =========================
-       [16] Hook buttons for drawers (About)
-       ========================= */
-    // تم الربط أعلاه بالفعل عبر addEventListener
-
-    /* =========================
-       [17] Persisted theme
-       ========================= */
-    // الثيم محفوظ في localStorage عبر applyTheme
-
+    keepLastLineVisible();
+    updateBottomSafeSpace(); // أول حساب للمساحة السفلية
   </script>
 </body>
 </html>
