@@ -1,14 +1,54 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <!-- =========================
+       [SEO/HEAD] إعدادات أساسية + SEO
+       =========================
+       هذا القسم مهم جداً لظهور الموقع في Google:
+       - title + description + canonical
+       - Open Graph للمشاركة
+       - Twitter Card
+       - JSON-LD لتعريف الموقع (Schema.org)
+  -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>منصة البحث العلمي - واجهة دردشة تقنية</title>
 
-  <!--
-    [قسم الخطوط]
-    - في الوضع الليلي نستخدم خط Terminal/Monospace لإحساس "الماتريكس".
-    - في الوضع النهاري نستخدم Cairo/Inter لقراءة أوضح.
+  <title>KeFo.tech | KeFo AI - One Word Search AI | Zakaria KeFo | زكريا كيفو</title>
+
+  <!-- وصف يظهر غالباً تحت النتيجة في Google -->
+  <meta name="description" content="KeFo AI من KeFo.tech: منصة بحث ذكية بكلمة واحدة (One Word Search AI) تعتمد على Wikipedia API. تطوير: Zakaria KeFo (زكريا كيفو). KeFo.tech, KeFo ai." />
+
+  <!-- رابط الصفحة الرسمي (مهم لتفادي تكرار النسخ) -->
+  <link rel="canonical" href="https://kefo-tech.github.io/kefo-ai/" />
+
+  <!-- Open Graph (للمشاركة على فيسبوك/واتساب/تلغرام..) -->
+  <meta property="og:title" content="KeFo.tech | KeFo AI - One Word Search AI" />
+  <meta property="og:description" content="منصة بحث ذكية مجانية تعتمد على ويكيبيديا. تطوير: Zakaria KeFo (زكريا كيفو) | KeFo.tech" />
+  <meta property="og:url" content="https://kefo-tech.github.io/kefo-ai/" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="KeFo.tech | KeFo AI - One Word Search AI" />
+  <meta name="twitter:description" content="بحث بكلمة واحدة عبر Wikipedia API. Zakaria KeFo | زكريا كيفو | KeFo.tech" />
+
+  <!-- JSON-LD: تعريف الموقع لمحركات البحث -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "KeFo.tech - KeFo AI",
+    "url": "https://kefo-tech.github.io/kefo-ai/",
+    "alternateName": ["KeFo AI", "KeFo.tech", "KeFo ai", "Zakaria KeFo", "زكريا كيفو", "One Word Search AI", "البحث بكلمة واحدة"],
+    "description": "One Word Search AI platform powered by Wikipedia API. منصة بحث ذكية تعتمد على ويكيبيديا."
+  }
+  </script>
+
+  <!-- =========================
+       [Fonts] خطوط للوضع النهاري
+       =========================
+       - الوضع الليلي: monospace (Terminal/Matrix)
+       - الوضع النهاري: Cairo/Inter لقراءة واضحة
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,23 +56,22 @@
 
   <style>
     /* =========================
-       [1] Reset + Variables
-       ========================= */
-
+       [1] Reset + منع تمرير الصفحة
+       =========================
+       أهم حل لمشكلة "النص يتجه للأسفل":
+       - نمنع تمرير الصفحة (body/html)
+       - التمرير يكون فقط داخل #conversation
+    */
     *, *::before, *::after { box-sizing: border-box; }
 
-    /*
-      أهم نقطة لحل مشكلة "النافذة تتجه للأسفل":
-      - نجعل الصفحة نفسها غير قابلة للتمرير (overflow: hidden)
-      - التمرير يكون فقط داخل صندوق المحادثة #conversation
-      هذا يمنع أي نزول للصفحة أو دفع العناصر للأسفل.
-    */
     html, body {
       height: 100%;
-      overflow: hidden; /* يمنع تحرّك الصفحة للأسفل */
+      overflow: hidden; /* يمنع الصفحة من النزول للأسفل */
     }
 
-    /* متغيرات الألوان والخطوط للوضع الليلي */
+    /* =========================
+       [2] Variables (Dark Theme)
+       ========================= */
     :root{
       --bg: #000;
       --text: #0f0;
@@ -48,13 +87,14 @@
       --btn-hover-bg: #0f0;
       --btn-hover-text: #000;
       --font: "Courier New", Courier, monospace;
+      --maxw: 720px;
     }
 
-    /*
-      [2] Theme: Light
-      - خط واضح للقراءة: Cairo/Inter
-      - تباين أعلى
-      - ألوان هادئة
+    /* =========================
+       [3] Light Theme
+       =========================
+       طلبت "خط خاص" للوضع النهاري:
+       - هنا نغيّر الخط + ألوان بتباين أوضح
     */
     body.theme-light{
       --bg: #f7f9ff;
@@ -74,9 +114,8 @@
     }
 
     /* =========================
-       [3] Layout: App Shell
+       [4] Body + App layout
        ========================= */
-
     body {
       font-family: var(--font);
       background: var(--bg);
@@ -90,24 +129,23 @@
 
     /*
       .app:
-      - عمود كامل الصفحة
-      - padding-bottom لترك مساحة لشريط الإدخال الثابت (fixed)
+      - يأخذ ارتفاع الشاشة كامل
+      - padding-bottom = مساحة شريط الإدخال + شريط الحقوق
     */
     .app {
       width: 100%;
-      max-width: 720px;
+      max-width: var(--maxw);
       display: flex;
       flex-direction: column;
-      height: 100vh;        /* مهم: يساوي ارتفاع الشاشة */
+      height: 100vh;
       padding: 10px;
-      padding-bottom: 96px; /* مساحة شريط الإدخال */
+      padding-bottom: 150px; /* لإفساح المجال للشريطين الثابتين */
       gap: 10px;
     }
 
     /* =========================
-       [4] Header (Sticky Top)
+       [5] Header (Sticky Top)
        ========================= */
-
     .header {
       position: sticky;
       top: 0;
@@ -125,9 +163,15 @@
 
     .header h1{
       margin: 0;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       text-shadow: 0 0 10px var(--border), 0 0 20px var(--border);
       line-height: 1.2;
+    }
+
+    .header-actions{
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
     .icon-btn{
@@ -145,7 +189,6 @@
       transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
       font-size: 18px;
     }
-
     .icon-btn:hover{
       background: var(--btn-hover-bg);
       color: var(--btn-hover-text);
@@ -153,14 +196,8 @@
     }
 
     /* =========================
-       [5] Chat Container
+       [6] Chat container + conversation (scroll هنا فقط)
        ========================= */
-
-    /*
-      #chat-container:
-      - يأخذ كل المساحة المتبقية
-      - min-height:0 مهم حتى يعمل overflow في الأبناء بشكل صحيح
-    */
     #chat-container {
       border: 1px solid var(--border);
       background: var(--panel);
@@ -170,27 +207,20 @@
       display: flex;
       flex-direction: column;
       flex: 1;
-      min-height: 0;
+      min-height: 0; /* مهم جداً كي يعمل overflow في الداخل */
     }
 
-    /*
-      #conversation:
-      - هذه هي منطقة التمرير الوحيدة
-      - overscroll-behavior يمنع سحب التمرير للـ body
-      - padding-bottom بسيط
-    */
     #conversation {
       padding: 12px;
       background: var(--panel2);
-      overflow-y: auto;
+      overflow-y: auto;           /* التمرير هنا فقط */
       flex: 1;
       min-height: 0;
-      scroll-behavior: auto;      /* أثناء الكتابة نفضّل auto لتفادي الاهتزاز */
+      scroll-behavior: auto;      /* أثناء الطباعة: auto أفضل لتفادي اهتزاز */
       overscroll-behavior: contain;
       direction: rtl;
     }
 
-    /* فقاعات الرسائل */
     .message-bubble {
       background: var(--bubble);
       color: var(--text);
@@ -208,7 +238,6 @@
       background: var(--bubble-user);
     }
 
-    /* صندوق المقال (النتيجة) */
     .article-container {
       padding: 14px;
       background: rgba(0, 128, 0, 0.08);
@@ -218,9 +247,7 @@
     }
     body.theme-light .article-container{ background: rgba(21,58,21,0.06); }
 
-    .typing-effect {
-      white-space: pre-wrap;
-    }
+    .typing-effect { white-space: pre-wrap; }
 
     .signature {
       margin-top: 8px;
@@ -249,21 +276,18 @@
     }
 
     /* =========================
-       [6] Input Bar (Fixed Bottom)
-       ========================= */
-
-    /*
-      شريط الإدخال ثابت تماماً ولن يتحرك:
-      position: fixed
-      وهذا يمنع أي تحرك أثناء كتابة النتائج.
+       [7] Input Bar (Fixed bottom)
+       =========================
+       - ثابت بالكامل
+       - لا يتحرك مع كتابة النتائج
     */
     #input-container {
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 10px;
+      bottom: 34px; /* فوق شريط الحقوق */
       width: calc(100% - 20px);
-      max-width: 720px;
+      max-width: var(--maxw);
       z-index: 60;
 
       display: flex;
@@ -272,7 +296,7 @@
       padding: 12px;
       background: var(--panel2);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 12px 12px 0 0;
       box-shadow: var(--shadow);
     }
 
@@ -306,12 +330,42 @@
     }
 
     /* =========================
-       [7] Notifications
-       ========================= */
+       [8] Copyright Bar (Fixed)
+       =========================
+       طلبت: "جميع الحقوق محفوظة ثابت أسفل حقل إرسال الرسالة"
+    */
+    #copyright-bar{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: calc(100% - 20px);
+      max-width: var(--maxw);
+      z-index: 59;
 
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      box-shadow: var(--shadow);
+
+      padding: 8px 10px;
+      font-size: 12px;
+      text-align: center;
+      opacity: 0.95;
+    }
+    #copyright-bar a{
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    /* =========================
+       [9] Notifications
+       ========================= */
     .notification {
       position: fixed;
-      bottom: 110px;
+      bottom: 140px;
       right: 20px;
       background: var(--border);
       color: var(--btn-hover-text);
@@ -325,29 +379,30 @@
     }
 
     /* =========================
-       [8] Settings Drawer
-       ========================= */
-
-    .settings-drawer{
+       [10] Drawers (Settings / Donate)
+       =========================
+       نستخدم نفس التصميم لنافذة الإعدادات ونافذة التبرع
+    */
+    .drawer{
       position: fixed;
       inset: 0;
       z-index: 100;
       display: none;
     }
-    .settings-drawer.open{ display: block; }
+    .drawer.open{ display: block; }
 
-    .settings-backdrop{
+    .drawer-backdrop{
       position: absolute;
       inset: 0;
       background: rgba(0,0,0,0.55);
     }
 
-    .settings-panel{
+    .drawer-panel{
       position: absolute;
       top: 12px;
       left: 12px;
       right: 12px;
-      max-width: 720px;
+      max-width: var(--maxw);
       margin: 0 auto;
       background: var(--panel2);
       border: 1px solid var(--border);
@@ -356,7 +411,7 @@
       padding: 12px;
     }
 
-    .settings-panel h2{
+    .drawer-panel h2{
       margin: 0 0 10px 0;
       font-size: 1.05rem;
     }
@@ -413,6 +468,11 @@
       cursor: pointer;
       transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
       font-size: 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     .btn:hover{
       background: var(--btn-hover-bg);
@@ -420,7 +480,7 @@
       transform: scale(1.03);
     }
 
-    .settings-footer{
+    .drawer-footer{
       display: flex;
       justify-content: flex-end;
       gap: 10px;
@@ -428,9 +488,8 @@
     }
 
     /* =========================
-       [9] Language Modal (First Run)
+       [11] Language Modal (First run)
        ========================= */
-
     .lang-modal{
       position: fixed;
       inset: 0;
@@ -489,41 +548,40 @@
       gap:10px;
     }
 
-    .flag{
-      font-size: 20px;
-      line-height: 1;
-      
-    }
-
-    .lang-name{ font-weight: 700;color: rgba(0,255,0,0.7); }
+    .flag{ font-size: 20px; line-height: 1; }
+    .lang-name{ font-weight: 700; color: rgba(922.0,0,99,5.7); }
     .lang-code{ font-size: 12px; opacity: 0.8; }
 
     /* =========================
-       [10] Responsive
+       [12] Responsive
        ========================= */
-
     @media (max-width: 600px) {
-      .app{ padding: 8px; padding-bottom: 100px; }
+      .app{ padding: 8px; padding-bottom: 160px; }
       .header h1 { font-size: 1.05rem; }
       #sendBtn { padding: 12px 14px; font-size: 15px; }
       .message-bubble { max-width: 100%; font-size: 14px; }
-      #input-container { bottom: 8px; width: calc(100% - 16px); }
+      #input-container { width: calc(100% - 16px); bottom: 34px; }
+      #copyright-bar { width: calc(100% - 16px); }
     }
   </style>
 </head>
 
 <body>
   <!-- =========================
-       [A] App Layout
-       - Header + Chat container
+       [APP] Header + Chat
        ========================= -->
   <div class="app">
     <div class="header">
       <h1 id="appTitle">منصة البحث العلمي</h1>
-      <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات">⚙️</button>
+
+      <!-- أزرار أعلى: تبرع + إعدادات -->
+      <div class="header-actions">
+        <button class="icon-btn" id="donateBtn" title="تبرع للمشروع" aria-label="تبرع">💚</button>
+        <button class="icon-btn" id="settingsBtn" title="الإعدادات" aria-label="الإعدادات">⚙️</button>
+      </div>
     </div>
 
-    <!-- موسيقى (اختيارية) -->
+    <!-- موسيقى اختيارية -->
     <audio id="background-music" preload="none" controls style="display:none">
       <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
     </audio>
@@ -532,9 +590,8 @@
     <div id="chat-container">
       <div id="conversation">
         <!--
-          [مرساة أسفل المحادثة]
-          هذه أهم نقطة لتتبّع آخر سطر:
-          سنستدعي scrollIntoView على هذا العنصر مع كل حرف.
+          [Anchor] مرساة أسفل المحادثة
+          - نضمن دائماً أن آخر حرف/سطر ظاهر عبر scrollIntoView على هذا العنصر
         -->
         <div id="bottomAnchor" style="height:1px;"></div>
       </div>
@@ -542,8 +599,7 @@
   </div>
 
   <!-- =========================
-       [B] Input Bar (Fixed)
-       - ثابت أسفل الشاشة دائماً
+       [INPUT] شريط إدخال ثابت
        ========================= -->
   <div id="input-container">
     <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
@@ -551,12 +607,22 @@
   </div>
 
   <!-- =========================
-       [C] Settings Drawer
-       - وضع ليلي/نهاري + زر تغيير اللغة
+       [COPYRIGHT] سطر حقوق ثابت
        ========================= -->
-  <div class="settings-drawer" id="settingsDrawer" aria-hidden="true">
-    <div class="settings-backdrop" id="settingsBackdrop"></div>
-    <div class="settings-panel" role="dialog" aria-modal="true" aria-label="لوحة الإعدادات">
+  <div id="copyright-bar">
+    جميع الحقوق محفوظة © <a href="https://kefo.tech" target="_blank" rel="noopener">KeFo.tech</a>
+  </div>
+
+  <!-- =========================
+       [DRAWER] الإعدادات
+       =========================
+       - تبديل وضع ليلي/نهاري
+       - زر تغيير لغة النتائج (Wikipedia ar/en/de)
+  -->
+  <div class="drawer" id="settingsDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="settingsBackdrop"></div>
+
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="لوحة الإعدادات">
       <h2 id="settingsTitle">الإعدادات</h2>
 
       <div class="setting-row">
@@ -576,17 +642,49 @@
         </div>
       </div>
 
-      <div class="settings-footer">
+      <div class="drawer-footer">
         <button class="btn" id="closeSettingsBtn">إغلاق</button>
       </div>
     </div>
   </div>
 
   <!-- =========================
-       [D] Language Modal (First Run)
-       - يظهر مرة واحدة فقط عند أول فتح
-       - يتم حفظ الاختيار في localStorage
-       ========================= -->
+       [DRAWER] نافذة التبرع
+       =========================
+       - نص حسب لغة الجهاز (UI) وليس حسب لغة ويكيبيديا
+       - زر PayPal يفتح في تبويب جديد
+  -->
+  <div class="drawer" id="donateDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="donateBackdrop"></div>
+
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="نافذة التبرع">
+      <h2 id="donateTitle">دعم المشروع</h2>
+
+      <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:10px;">
+        <div id="donateText" style="line-height:1.8;"></div>
+
+        <!-- رابط PayPal الذي أعطيتني إياه -->
+        <a id="paypalDonateLink" class="btn"
+           target="_blank" rel="noopener"
+           href="https://py.pl/1T9xYzLe4cnWzyr45JFynw">
+          التبرع عبر PayPal
+        </a>
+
+        <div style="font-size:12px; opacity:.85;" id="donateHint"></div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn" id="closeDonateBtn">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       [LANG MODAL] شاشة اختيار لغة النتائج (مرة واحدة)
+       =========================
+       - تظهر فقط لأول مرة (إذا لم تُحفظ اللغة في localStorage)
+       - تحفظ الاختيار وتستخدمه في روابط ويكيبيديا (ar/en/de)
+  -->
   <div class="lang-modal" id="langModal">
     <div class="lang-card">
       <h3 id="langPrompt">اختر لغة النتائج</h3>
@@ -621,8 +719,7 @@
               <div class="lang-name">Deutsch</div>
               <div class="lang-code">Wikipedia: de</div>
             </div>
-          </div>
-          <span>→</span>
+          </span>
         </button>
       </div>
 
@@ -634,11 +731,11 @@
 
   <script>
     /* =========================
-       [1] DOM References + Storage Keys
+       [1] عناصر الصفحة + مفاتيح التخزين
        ========================= */
-
     const conversationContainer = document.getElementById('conversation');
     const bottomAnchor = document.getElementById('bottomAnchor');
+
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
 
@@ -646,6 +743,11 @@
     const settingsDrawer = document.getElementById('settingsDrawer');
     const settingsBackdrop = document.getElementById('settingsBackdrop');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+    const donateBtn = document.getElementById('donateBtn');
+    const donateDrawer = document.getElementById('donateDrawer');
+    const donateBackdrop = document.getElementById('donateBackdrop');
+    const closeDonateBtn = document.getElementById('closeDonateBtn');
 
     const themeToggle = document.getElementById('themeToggle');
     const themeLabel = document.getElementById('themeLabel');
@@ -660,28 +762,52 @@
 
     let isMusicPlayed = false;
 
-    /*
-      wikiLang:
-      - لغة ويكيبيديا التي سنستخدمها في الروابط:
-      - ar / en / de
-    */
+    // لغة ويكيبيديا المختارة للبحث: ar / en / de
     let wikiLang = 'ar';
 
     /* =========================
-       [2] أهم دالة: keepLastLineVisible()
+       [2] أهم وظيفة: إبقاء آخر سطر ظاهر دائماً
        =========================
-       هذه الدالة تُبقي آخر سطر/حرف ظاهر دائماً:
-       - تعتمد على bottomAnchor الموجود في أسفل المحادثة
-       - تستخدم scrollIntoView ليضمن المتصفح إبراز آخر نقطة.
+       - نستخدم scrollIntoView على bottomAnchor
+       - هذا يضمن أن آخر حرف/سطر يُكتب سيكون مرئياً دائماً
+       - التمرير يحدث داخل #conversation فقط (body ممنوع من التمرير)
     */
     function keepLastLineVisible() {
       bottomAnchor.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
 
     /* =========================
-       [3] Theme Functions
+       [3] فتح/إغلاق الأدراج (Settings / Donate)
        ========================= */
+    function openDrawer(drawer){
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+    }
+    function closeDrawer(drawer){
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+    }
 
+    settingsBtn.addEventListener('click', () => openDrawer(settingsDrawer));
+    settingsBackdrop.addEventListener('click', () => closeDrawer(settingsDrawer));
+    closeSettingsBtn.addEventListener('click', () => closeDrawer(settingsDrawer));
+
+    donateBtn.addEventListener('click', () => openDrawer(donateDrawer));
+    donateBackdrop.addEventListener('click', () => closeDrawer(donateDrawer));
+    closeDonateBtn.addEventListener('click', () => closeDrawer(donateDrawer));
+
+    // زر ESC يغلق أي نافذة مفتوحة
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDrawer(settingsDrawer);
+        closeDrawer(donateDrawer);
+        closeLangModal();
+      }
+    });
+
+    /* =========================
+       [4] Theme (ليلي/نهاري) + حفظ بالمتصفح
+       ========================= */
     function applyTheme(theme) {
       const isLight = theme === 'light';
       document.body.classList.toggle('theme-light', isLight);
@@ -690,7 +816,6 @@
       localStorage.setItem(STORAGE_THEME, theme);
     }
 
-    // تحميل الثيم من التخزين
     (function initTheme(){
       const saved = localStorage.getItem(STORAGE_THEME) || 'dark';
       applyTheme(saved);
@@ -701,43 +826,20 @@
     });
 
     /* =========================
-       [4] Settings Drawer (Open/Close)
-       ========================= */
-
-    function openSettings(){
-      settingsDrawer.classList.add('open');
-      settingsDrawer.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeSettings(){
-      settingsDrawer.classList.remove('open');
-      settingsDrawer.setAttribute('aria-hidden', 'true');
-    }
-
-    settingsBtn.addEventListener('click', openSettings);
-    closeSettingsBtn.addEventListener('click', closeSettings);
-    settingsBackdrop.addEventListener('click', closeSettings);
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeSettings();
-        closeLangModal();
-      }
-    });
-
-    /* =========================
-       [5] UI Language (Prompt Text) Based on Device Language
-       ========================= */
-
+       [5] لغة واجهة النصوص (UI) حسب لغة الجهاز
+       =========================
+       - هذه اللغة تؤثر على نص نافذة التبرع والرسائل التوضيحية
+       - بينما wikiLang تؤثر على مصدر ويكيبيديا نفسه
+    */
     function getDeviceUILang(){
       const l = (navigator.language || 'en').toLowerCase();
       if (l.startsWith('ar')) return 'ar';
       if (l.startsWith('de')) return 'de';
       return 'en';
     }
-
     const uiLang = getDeviceUILang();
 
+    // نصوص الواجهة الأساسية حسب لغة الجهاز (UI)
     const uiText = {
       ar: {
         langPrompt: "مرحباً، اختر لغة النتائج",
@@ -753,10 +855,21 @@
         searchErr: "❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.",
         fetchErr: "❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.",
         copyBtn: "نسخ النتيجة",
-        copied: "✅ تم نسخ النص!",
+        copied: "✅ تم!",
         copyFail: "❌ لم يتم النسخ!",
         signature: "بقلم زكريا كيفو",
-        currentLang: (code)=>({ar:"عربي",en:"English",de:"Deutsch"}[code]||code)
+        settingsTitle: "الإعدادات",
+        mode: "الوضع",
+        language: "اللغة",
+        change: "تغيير",
+        close: "إغلاق",
+        currentLang: (code)=>({ar:"عربي",en:"English",de:"Deutsch"}[code]||code),
+        donateTitle: "دعم المشروع",
+        donateText: `هذه المنصة مجانية لتسهيل الوصول للمعلومة عبر ويكيبيديا.<br/>
+                     تم تطويرها بشكل مستقل من مطوّر سوري: <b>Zakaria KeFo</b>.<br/>
+                     تبرعك يساعد في الاستضافة والتطوير وإضافة ميزات جديدة.`,
+        donateBtn: "التبرع عبر PayPal",
+        donateHint: "سيتم فتح PayPal في تبويب جديد."
       },
       en: {
         langPrompt: "Welcome, choose results language",
@@ -772,10 +885,21 @@
         searchErr: "❌ Search error. Please try again later.",
         fetchErr: "❌ Error fetching summary. Please try again later.",
         copyBtn: "Copy result",
-        copied: "✅ Copied!",
+        copied: "✅ Done!",
         copyFail: "❌ Copy failed!",
         signature: "By Zakaria KeFo",
-        currentLang: (code)=>({ar:"Arabic",en:"English",de:"German"}[code]||code)
+        settingsTitle: "Settings",
+        mode: "Mode",
+        language: "Language",
+        change: "Change",
+        close: "Close",
+        currentLang: (code)=>({ar:"Arabic",en:"English",de:"German"}[code]||code),
+        donateTitle: "Support the project",
+        donateText: `This platform is free and helps access knowledge through Wikipedia.<br/>
+                     Built independently by a Syrian developer: <b>Zakaria KeFo</b>.<br/>
+                     Your donation supports hosting, improvements, and new features.`,
+        donateBtn: "Donate via PayPal",
+        donateHint: "PayPal will open in a new tab."
       },
       de: {
         langPrompt: "Willkommen, wähle die Sprache der Ergebnisse",
@@ -791,33 +915,60 @@
         searchErr: "❌ Suchfehler. Bitte später erneut versuchen.",
         fetchErr: "❌ Fehler beim Laden. Bitte später erneut versuchen.",
         copyBtn: "Ergebnis kopieren",
-        copied: "✅ Kopiert!",
+        copied: "✅ Fertig!",
         copyFail: "❌ Kopieren fehlgeschlagen!",
         signature: "Von Zakaria KeFo",
-        currentLang: (code)=>({ar:"Arabisch",en:"Englisch",de:"Deutsch"}[code]||code)
+        settingsTitle: "Einstellungen",
+        mode: "Modus",
+        language: "Sprache",
+        change: "Ändern",
+        close: "Schließen",
+        currentLang: (code)=>({ar:"Arabisch",en:"Englisch",de:"Deutsch"}[code]||code),
+        donateTitle: "Projekt unterstützen",
+        donateText: `Diese Plattform ist kostenlos und erleichtert den Zugang zu Wissen über Wikipedia.<br/>
+                     Unabhängig entwickelt von einem syrischen Entwickler: <b>Zakaria KeFo</b>.<br/>
+                     Deine Spende unterstützt Hosting, Verbesserungen und neue Funktionen.`,
+        donateBtn: "Über PayPal spenden",
+        donateHint: "PayPal öffnet sich in einem neuen Tab."
       }
     };
 
-    function t(key, ...args){
-      const v = uiText[uiLang][key];
+    function T(key, ...args){
+      const v = (uiText[uiLang] || uiText.en)[key];
       return typeof v === 'function' ? v(...args) : v;
     }
 
+    // تطبيق نصوص الواجهة على العناصر
     function applyUIText(){
-      langPrompt.textContent = t('langPrompt');
-      document.getElementById('langHint').textContent = t('langHint');
-      userInput.placeholder = t('inputPlaceholder');
-      sendBtn.textContent = t('searchBtn');
-      currentLangLabel.textContent = t('currentLang', wikiLang);
+      // شريط البحث
+      userInput.placeholder = T('inputPlaceholder');
+      sendBtn.textContent = T('searchBtn');
 
-      // تحديث تسمية الوضع بحسب الثيم الحالي (مع الحفاظ على النص العربي هنا)
-      themeLabel.textContent = document.body.classList.contains('theme-light') ? 'نهاري' : 'ليلي';
+      // الإعدادات
+      document.getElementById('settingsTitle').textContent = T('settingsTitle');
+      document.getElementById('themeRowLabel').textContent = T('mode');
+      document.getElementById('langRowLabel').textContent = T('language');
+      changeLangBtn.textContent = T('change');
+      closeSettingsBtn.textContent = T('close');
+
+      // التبرع
+      document.getElementById('donateTitle').textContent = T('donateTitle');
+      document.getElementById('donateText').innerHTML = T('donateText');
+      document.getElementById('paypalDonateLink').textContent = T('donateBtn');
+      document.getElementById('donateHint').textContent = T('donateHint');
+      closeDonateBtn.textContent = T('close');
+
+      // لغة النتائج
+      langPrompt.textContent = T('langPrompt');
+      document.getElementById('langHint').textContent = T('langHint');
+
+      // عرض اللغة الحالية
+      currentLangLabel.textContent = T('currentLang', wikiLang);
     }
 
     /* =========================
-       [6] Language Modal Open/Close + Save
+       [6] Language Modal (لغة نتائج ويكيبيديا)
        ========================= */
-
     function openLangModal(){ langModal.classList.add('open'); }
     function closeLangModal(){ langModal.classList.remove('open'); }
 
@@ -825,64 +976,55 @@
       wikiLang = langCode;
       localStorage.setItem(STORAGE_LANG, langCode);
 
-      // اتجاه عرض المحادثة حسب لغة النتائج (اختياري)
+      // اتجاه النص في المحادثة: عربي RTL، غيره LTR
       conversationContainer.style.direction = (wikiLang === 'ar') ? 'rtl' : 'ltr';
 
       applyUIText();
+      keepLastLineVisible();
     }
 
-    // ربط أزرار اللغات داخل شاشة الترحيب
+    // أزرار اللغات في نافذة الترحيب
     document.querySelectorAll('.lang-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const lang = btn.getAttribute('data-lang');
         setWikiLang(lang);
         closeLangModal();
-        showCopyNotification(t('copied'));
-        keepLastLineVisible();
+        showCopyNotification(T('copied'));
       });
     });
 
-    // زر تغيير اللغة من الإعدادات
+    // زر تغيير اللغة داخل الإعدادات
     changeLangBtn.addEventListener('click', ()=>{
-      closeSettings();
+      closeDrawer(settingsDrawer);
       openLangModal();
     });
 
-    // تهيئة اللغة: إن لم تكن محفوظة، نفتح شاشة الترحيب مرة واحدة
+    // تهيئة اللغة: إذا ليست محفوظة، تظهر نافذة الترحيب مرة واحدة
     (function initLang(){
       const saved = localStorage.getItem(STORAGE_LANG);
-      if (saved) {
-        setWikiLang(saved);
-      } else {
-        openLangModal();
-        applyUIText();
-      }
+      if (saved) setWikiLang(saved);
+      else openLangModal();
     })();
 
-    // تطبيق نصوص الواجهة
-    applyUIText();
-
     /* =========================
-       [7] Wikipedia API Helpers
-       ========================= */
-
+       [7] Wikipedia API helpers
+       =========================
+       - تغيير الرابط حسب wikiLang (ar/en/de)
+    */
     function wikiBase(){
       return `https://${wikiLang}.wikipedia.org/w/api.php`;
     }
 
     /* =========================
-       [8] Conversation Helpers
+       [8] أدوات المحادثة: إضافة رسالة + إشعار + نسخ
        ========================= */
-
     function addMessageToConversation(message, isUser = false) {
       const messageDiv = document.createElement('div');
       messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
       messageDiv.textContent = message;
 
-      // إدخال الرسالة قبل المرساة حتى تبقى المرساة دائماً آخر عنصر
+      // نضيف قبل المرساة حتى تبقى المرساة آخر عنصر دائماً
       conversationContainer.insertBefore(messageDiv, bottomAnchor);
-
-      // أبقِ آخر سطر ظاهر
       keepLastLineVisible();
     }
 
@@ -895,23 +1037,22 @@
       setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => { notification.remove(); }, 500);
-      }, 1800);
+      }, 1600);
     }
 
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text)
-        .then(() => { showCopyNotification(t('copied')); })
-        .catch(() => { showCopyNotification(t('copyFail')); });
+        .then(() => showCopyNotification(T('copied')))
+        .catch(() => showCopyNotification(T('copyFail')));
     }
 
     /* =========================
-       [9] Search Wikipedia
+       [9] Search Wikipedia (بحث)
        ========================= */
-
     async function searchWikipedia() {
       const searchTerm = userInput.value.trim();
       if (!searchTerm) {
-        showCopyNotification(t('noTerm'));
+        showCopyNotification(T('noTerm'));
         return;
       }
 
@@ -923,7 +1064,7 @@
       }
 
       addMessageToConversation(searchTerm, true);
-      addMessageToConversation(t('searching'), false);
+      addMessageToConversation(T('searching'), false);
 
       const apiUrl = `${wikiBase()}?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
 
@@ -934,7 +1075,7 @@
         displaySearchResults(results, searchTerm);
       } catch (error) {
         console.error("Search error:", error);
-        addMessageToConversation(t('searchErr'), false);
+        addMessageToConversation(T('searchErr'), false);
       } finally {
         userInput.value = '';
         userInput.focus();
@@ -943,11 +1084,11 @@
 
     function displaySearchResults(results, searchTerm) {
       if (!results || results.length === 0) {
-        addMessageToConversation(t('noResults', searchTerm), false);
+        addMessageToConversation(T('noResults', searchTerm), false);
         return;
       }
 
-      addMessageToConversation(t('results'), false);
+      addMessageToConversation(T('results'), false);
 
       results.slice(0, 10).forEach((result, index) => {
         const resultDiv = document.createElement('div');
@@ -957,7 +1098,6 @@
         resultDiv.title = 'Click to fetch summary';
         resultDiv.onclick = () => fetchFullArticle(result.title);
 
-        // إدخاله قبل المرساة حتى تبقى المرساة آخر عنصر
         conversationContainer.insertBefore(resultDiv, bottomAnchor);
       });
 
@@ -966,10 +1106,13 @@
 
     /* =========================
        [10] Fetch Article Summary + Typing Effect
-       ========================= */
-
+       =========================
+       - يجلب مقدمة المقال exintro فقط
+       - يكتب حرفاً حرفاً
+       - مع keepLastLineVisible() كل حرف لضمان بقاء آخر سطر ظاهر
+    */
     async function fetchFullArticle(title) {
-      addMessageToConversation(t('fetching'), false);
+      addMessageToConversation(T('fetching'), false);
 
       const apiUrl = `${wikiBase()}?action=query&format=json&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(title)}&origin=*`;
 
@@ -979,44 +1122,35 @@
         const page = Object.values(data.query.pages)[0];
         const extract = page.extract || "No summary found.";
 
-        // إنشاء صندوق المقال
         const articleContainer = document.createElement('div');
         articleContainer.className = 'article-container';
 
-        // منطقة الكتابة التدريجية
         const typingEffectDiv = document.createElement('div');
         typingEffectDiv.className = 'typing-effect';
         articleContainer.appendChild(typingEffectDiv);
 
-        // إدخال المقال قبل المرساة
         conversationContainer.insertBefore(articleContainer, bottomAnchor);
         keepLastLineVisible();
 
-        // كتابة حرف-بحرف مع تتبع آخر سطر دائماً
         let i = 0;
-        const speed = 10; // سرعة الكتابة (كلما قل الرقم زادت السرعة)
+        const speed = 10;
 
         function typeWriter() {
           if (i < extract.length) {
             typingEffectDiv.textContent += extract.charAt(i);
             i++;
-
-            // هذه السطر هو المهم: يبقي آخر حرف ظاهر
             keepLastLineVisible();
-
             setTimeout(typeWriter, speed);
           } else {
-            // التوقيع
             const signature = document.createElement('div');
             signature.className = 'signature';
-            signature.textContent = t('signature');
+            signature.textContent = T('signature');
             articleContainer.appendChild(signature);
 
-            // زر النسخ
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
-            copyBtn.textContent = t('copyBtn');
-            copyBtn.onclick = () => copyToClipboard(extract + "\n" + t('signature'));
+            copyBtn.textContent = T('copyBtn');
+            copyBtn.onclick = () => copyToClipboard(extract + "\n" + T('signature'));
             articleContainer.appendChild(copyBtn);
 
             keepLastLineVisible();
@@ -1024,37 +1158,34 @@
         }
 
         typeWriter();
-
       } catch (error) {
         console.error("Fetch error:", error);
-        addMessageToConversation(t('fetchErr'), false);
+        addMessageToConversation(T('fetchErr'), false);
       }
     }
 
     /* =========================
-       [11] Events: Click + Enter
+       [11] Events: زر بحث + Enter
        ========================= */
-
     sendBtn.addEventListener('click', searchWikipedia);
     userInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') searchWikipedia();
     });
 
     /* =========================
-       [12] Start Message
+       [12] Anti-copy (اختياري)
        ========================= */
-
-    addMessageToConversation(t('welcomeMsg'), false);
-
-    /* =========================
-       [13] Anti-Copy (Optional)
-       ========================= */
-
     document.addEventListener("contextmenu", e => e.preventDefault());
     document.addEventListener("selectstart", e => e.preventDefault());
     document.addEventListener("touchstart", e => {
       if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
+
+    /* =========================
+       [13] تشغيل أولي: ثيم + نصوص + رسالة ترحيب
+       ========================= */
+    applyUIText();
+    addMessageToConversation(T('welcomeMsg'), false);
 
   </script>
 </body>
