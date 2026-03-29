@@ -13,7 +13,7 @@
       --cyan2:#00b7ff;
       --green:#00ff9c;
       --danger:#ff4d4d;
-      --text:#bffcff;
+      --text:#d8fdff;
       --muted:#7ee7f0;
       --glass:rgba(0,255,255,0.06);
       --glass-2:rgba(0,255,255,0.03);
@@ -21,8 +21,8 @@
       --line-strong:rgba(0,255,255,0.4);
       --shadow:0 0 20px rgba(0,234,255,.16);
       --radius:16px;
-      --topbar-h:72px;
-      --inputbar-h:86px;
+      --topbar-h:74px;
+      --inputbar-h:88px;
     }
 
     *{ box-sizing:border-box; }
@@ -31,6 +31,7 @@
       width:100%;
       height:100%;
       margin:0;
+      overflow:hidden;
     }
 
     body{
@@ -39,7 +40,6 @@
       background:
         radial-gradient(1100px 700px at 50% -10%, #0b2744 0%, var(--bg) 58%),
         linear-gradient(180deg, #010207, #040812);
-      overflow:hidden;
       user-select:none;
     }
 
@@ -170,6 +170,10 @@
       border:1px solid var(--line);
       border-radius:999px;
       background:rgba(0,255,255,.04);
+      max-width:260px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .dot{
@@ -293,8 +297,10 @@
       flex:1 1 auto;
       min-height:0;
       overflow:auto;
-      padding:18px 18px 24px;
+      padding:18px 18px 28px;
       scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
     }
 
     .chat::-webkit-scrollbar{
@@ -405,10 +411,9 @@
     .card-body{
       padding:16px;
       line-height:2;
-      color:#d8fdff;
+      color:var(--text);
       white-space:pre-wrap;
       word-break:break-word;
-      max-height:none;
     }
 
     .actions{
@@ -501,16 +506,6 @@
       color:#7fbcc4;
     }
 
-    .hint{
-      position:absolute;
-      top:12px;
-      left:14px;
-      font-size:11px;
-      color:var(--muted);
-      opacity:.75;
-      pointer-events:none;
-    }
-
     .toast{
       position:fixed;
       bottom:110px;
@@ -538,15 +533,19 @@
       .hero{
         flex-basis:185px;
       }
+
       .core-cluster{
         transform:scale(.92);
       }
+
       .card-title{
         font-size:14px;
       }
+
       .actions{
         gap:8px;
       }
+
       .btn{
         font-size:13px;
         padding:8px 10px;
@@ -556,7 +555,7 @@
     @media (max-width: 640px){
       :root{
         --topbar-h:76px;
-        --inputbar-h:82px;
+        --inputbar-h:84px;
       }
 
       .app{
@@ -581,6 +580,10 @@
         font-size:11px;
       }
 
+      .status-pill{
+        max-width:160px;
+      }
+
       .hero{
         flex-basis:165px;
       }
@@ -590,7 +593,7 @@
       }
 
       .chat{
-        padding:14px 12px 20px;
+        padding:14px 12px 22px;
       }
 
       .bubble{
@@ -653,14 +656,14 @@
         <div class="logo"></div>
         <div class="brand-text">
           <h1>KeFo AI — FUTURE HUD</h1>
-          <div class="sub">Student Mode / Wikipedia Intelligence Interface</div>
+          <div class="sub">Adaptive Wikipedia Intelligence for Students</div>
         </div>
       </div>
 
       <div class="sys">
         <div class="status-pill"><span>CORE ONLINE</span><span class="dot"></span></div>
-        <div class="status-pill" id="voiceInfo">AUTO VOICE</div>
-        <div class="status-pill">AR</div>
+        <div class="status-pill" id="voiceInfo">VOICE: AUTO</div>
+        <div class="status-pill" id="langInfo">LANG: AUTO</div>
       </div>
     </div>
 
@@ -680,7 +683,7 @@
 
     <div class="inputbar">
       <div class="icon" id="voiceBtn" title="إدخال صوتي">🎤</div>
-      <input id="input" type="text" placeholder="اكتب سؤالك… مثال: الذكاء الاصطناعي" />
+      <input id="input" type="text" placeholder="اكتب سؤالك… مثال: حلب / Berlin / künstliche Intelligenz" />
       <div class="icon" id="sendBtn" title="إرسال">➤</div>
     </div>
   </div>
@@ -695,11 +698,14 @@
     const voiceBtn = document.getElementById('voiceBtn');
     const toast = document.getElementById('toast');
     const voiceInfo = document.getElementById('voiceInfo');
+    const langInfo = document.getElementById('langInfo');
 
     let voices = [];
     let bestArabicVoice = null;
     let currentUtterance = null;
     let currentReadButton = null;
+    let userInteractedForAudio = false;
+    let speaking = false;
 
     function showToast(message){
       toast.textContent = message;
@@ -707,7 +713,7 @@
       clearTimeout(showToast._t);
       showToast._t = setTimeout(() => {
         toast.classList.remove('show');
-      }, 1600);
+      }, 1800);
     }
 
     function scrollChatToBottom(){
@@ -736,9 +742,19 @@
       return wrap;
     }
 
+    function enableAudioByGesture(){
+      if(!userInteractedForAudio){
+        userInteractedForAudio = true;
+      }
+    }
+
+    document.body.addEventListener('click', enableAudioByGesture, { passive:true });
+    document.body.addEventListener('touchstart', enableAudioByGesture, { passive:true });
+
     function stopSpeaking(updateButton = true){
       window.speechSynthesis.cancel();
       currentUtterance = null;
+      speaking = false;
       core.classList.remove('speaking');
 
       if(updateButton && currentReadButton){
@@ -753,22 +769,18 @@
       const lang = (voice.lang || '').toLowerCase();
 
       let score = 0;
-
       if(lang.startsWith('ar')) score += 100;
       if(name.includes('google')) score += 40;
       if(name.includes('microsoft')) score += 35;
       if(name.includes('natural')) score += 25;
       if(name.includes('desktop')) score += 10;
-      if(name.includes('female')) score += 6;
-      if(name.includes('male')) score += 5;
-      if(name.includes('zira')) score += 4;
-      if(name.includes('hortense')) score += 4;
       if(name.includes('hoda')) score += 8;
       if(name.includes('naayf')) score += 8;
       if(name.includes('tarik')) score += 8;
       if(name.includes('majid')) score += 8;
       if(name.includes('maged')) score += 8;
-      if(name.includes('android')) score += 5;
+      if(name.includes('female')) score += 5;
+      if(name.includes('male')) score += 4;
       if(voice.localService) score += 3;
 
       return score;
@@ -789,28 +801,62 @@
     }
 
     loadVoices();
-    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+    if(typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined){
       speechSynthesis.onvoiceschanged = loadVoices;
     }
 
-    function speak(text, button = null){
-      stopSpeaking(false);
+    function splitTextForSpeech(text, maxLength = 180){
+      const clean = String(text || '').replace(/\s+/g, ' ').trim();
+      if(!clean) return [];
 
-      const cleanText = String(text || '').trim();
-      if(!cleanText) return;
+      const sentences = clean.match(/[^.!؟\n]+[.!؟\n]?/g) || [clean];
+      const chunks = [];
+      let current = '';
 
-      const utter = new SpeechSynthesisUtterance(cleanText);
-      utter.lang = 'ar-SA';
-      utter.rate = 0.95;
-      utter.pitch = 1;
-      utter.volume = 1;
+      for(const sentenceRaw of sentences){
+        const sentence = sentenceRaw.trim();
+        if(!sentence) continue;
 
-      if(bestArabicVoice){
-        utter.voice = bestArabicVoice;
-        utter.lang = bestArabicVoice.lang || 'ar-SA';
+        if((current + ' ' + sentence).trim().length <= maxLength){
+          current = (current + ' ' + sentence).trim();
+        } else {
+          if(current) chunks.push(current);
+
+          if(sentence.length <= maxLength){
+            current = sentence;
+          } else {
+            const words = sentence.split(' ');
+            let part = '';
+            for(const word of words){
+              if((part + ' ' + word).trim().length <= maxLength){
+                part = (part + ' ' + word).trim();
+              } else {
+                if(part) chunks.push(part);
+                part = word;
+              }
+            }
+            current = part;
+          }
+        }
       }
 
-      currentUtterance = utter;
+      if(current) chunks.push(current);
+      return chunks;
+    }
+
+    function speakLong(text, button = null){
+      if(!userInteractedForAudio){
+        showToast('المتصفح يتطلب لمسة أولاً لتفعيل الصوت');
+        return;
+      }
+
+      stopSpeaking(false);
+
+      const chunks = splitTextForSpeech(text, 180);
+      if(!chunks.length) return;
+
+      let index = 0;
+      speaking = true;
       currentReadButton = button;
 
       if(currentReadButton){
@@ -818,31 +864,63 @@
         currentReadButton.classList.add('stop');
       }
 
-      utter.onstart = () => {
-        core.classList.add('speaking');
-      };
-
-      utter.onend = () => {
-        core.classList.remove('speaking');
-        if(currentReadButton){
-          currentReadButton.textContent = '🔊 قراءة صوتية';
-          currentReadButton.classList.remove('stop');
+      function speakNext(){
+        if(!speaking || index >= chunks.length){
+          speaking = false;
+          core.classList.remove('speaking');
+          if(currentReadButton){
+            currentReadButton.textContent = '🔊 قراءة صوتية';
+            currentReadButton.classList.remove('stop');
+          }
+          currentUtterance = null;
+          currentReadButton = null;
+          return;
         }
-        currentReadButton = null;
-        currentUtterance = null;
-      };
 
-      utter.onerror = () => {
-        core.classList.remove('speaking');
-        if(currentReadButton){
-          currentReadButton.textContent = '🔊 قراءة صوتية';
-          currentReadButton.classList.remove('stop');
+        const utter = new SpeechSynthesisUtterance(chunks[index]);
+        utter.lang = bestArabicVoice?.lang || 'ar-SA';
+        utter.rate = 0.95;
+        utter.pitch = 1;
+        utter.volume = 1;
+
+        if(bestArabicVoice){
+          utter.voice = bestArabicVoice;
         }
-        currentReadButton = null;
-        currentUtterance = null;
-      };
 
-      window.speechSynthesis.speak(utter);
+        currentUtterance = utter;
+
+        utter.onstart = () => {
+          core.classList.add('speaking');
+        };
+
+        utter.onend = () => {
+          index++;
+          speakNext();
+        };
+
+        utter.onerror = () => {
+          speaking = false;
+          core.classList.remove('speaking');
+          if(currentReadButton){
+            currentReadButton.textContent = '🔊 قراءة صوتية';
+            currentReadButton.classList.remove('stop');
+          }
+          currentUtterance = null;
+          currentReadButton = null;
+        };
+
+        window.speechSynthesis.speak(utter);
+      }
+
+      speakNext();
+    }
+
+    function detectInputLanguage(text){
+      const value = String(text || '').trim();
+
+      if(/[ء-ي]/.test(value)) return 'ar';
+      if(/[äöüßÄÖÜ]/.test(value)) return 'de';
+      return 'en';
     }
 
     function summarizeLocal(text){
@@ -851,7 +929,7 @@
         .map(s => s.trim())
         .filter(Boolean);
 
-      if (!parts.length) return text;
+      if(!parts.length) return text;
       return parts.slice(0, 4).join('.\n') + (parts.length > 4 ? '\n…' : '');
     }
 
@@ -873,7 +951,7 @@
       return btn;
     }
 
-    function renderCard(title, text){
+    function renderCard(title, text, sourceLang){
       const card = document.createElement('div');
       card.className = 'card';
 
@@ -889,7 +967,7 @@
       badges.innerHTML = `
         <span class="badge">AI READY</span>
         <span class="badge">STUDENT</span>
-        <span class="badge">WIKIPEDIA</span>
+        <span class="badge">WIKIPEDIA ${String(sourceLang || '').toUpperCase()}</span>
       `;
 
       head.appendChild(titleDiv);
@@ -906,16 +984,16 @@
       actions.className = 'actions';
 
       const copyBtn = createActionButton('📋 نسخ النص', () => {
-        navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(body.textContent);
         showToast('تم النسخ');
       });
 
       const readBtn = createActionButton('🔊 قراءة صوتية', () => {
-        if(currentReadButton === readBtn && currentUtterance){
+        if(currentReadButton === readBtn && speaking){
           stopSpeaking(true);
           return;
         }
-        speak(text, readBtn);
+        speakLong(body.textContent, readBtn);
       });
 
       const saveBtn = createActionButton('⭐ حفظ', () => {
@@ -923,7 +1001,8 @@
         notes.push({
           title,
           text,
-          date: Date.now()
+          date: Date.now(),
+          lang: sourceLang
         });
         localStorage.setItem('kefo_notes', JSON.stringify(notes));
         showToast('تم الحفظ');
@@ -934,20 +1013,20 @@
         scrollElementIntoView(card);
       });
 
-      const originalBtn = createActionButton('📘 النص الكامل', () => {
+      const fullBtn = createActionButton('📘 النص الكامل', () => {
         body.textContent = text;
         scrollElementIntoView(card);
       });
 
       const quizBtn = createActionButton('🧪 اختبرني', () => {
-        alert(quizFromText(text));
+        alert(quizFromText(body.textContent));
       });
 
       actions.appendChild(copyBtn);
       actions.appendChild(readBtn);
       actions.appendChild(saveBtn);
       actions.appendChild(summaryBtn);
-      actions.appendChild(originalBtn);
+      actions.appendChild(fullBtn);
       actions.appendChild(quizBtn);
 
       card.appendChild(head);
@@ -963,8 +1042,6 @@
         scrollElementIntoView(card);
       }, 850);
 
-      speak(text, readBtn);
-
       return card;
     }
 
@@ -974,25 +1051,34 @@
       const q = input.value.trim();
       if(!q) return;
 
+      const lang = detectInputLanguage(q);
+      langInfo.textContent = 'LANG: ' + lang.toUpperCase();
+
       addBubble(q, 'user');
       input.value = '';
 
       core.classList.add('thinking');
       addBubble('🤖 أفكر… جاري تحليل المعرفة.');
 
-      const url = `https://ar.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&explaintext&titles=${encodeURIComponent(q)}&origin=*`;
+      const url = `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&explaintext&titles=${encodeURIComponent(q)}&origin=*`;
 
       try{
         const res = await fetch(url);
         const data = await res.json();
         const page = Object.values(data.query.pages)[0];
 
-        const text = page && page.extract ? page.extract : 'لم أجد معلومات عن هذا الموضوع.';
+        const text = page && page.extract ? page.extract : (
+          lang === 'ar' ? 'لم أجد معلومات عن هذا الموضوع.' :
+          lang === 'de' ? 'Keine Informationen zu diesem Thema gefunden.' :
+          'No information found about this topic.'
+        );
+
         const title = page && page.title ? page.title : q;
 
         core.classList.remove('thinking');
-        renderCard(title, text);
-      } catch (error){
+        const card = renderCard(title, text, lang);
+        scrollElementIntoView(card);
+      } catch(error){
         core.classList.remove('thinking');
         addBubble('❌ حدث خطأ أثناء جلب المعلومات.', 'ai');
       }
@@ -1034,7 +1120,7 @@
       rec.start();
     });
 
-    addBubble('مرحبًا 👋 اكتب أي موضوع، وسأعرض لك النتيجة في واجهة مستقبلية مع أدوات مفيدة للطلاب.', 'ai');
+    addBubble('مرحبًا 👋 اكتب أي موضوع بالعربية أو الإنجليزية أو الألمانية، وسأجلب لك النتيجة باللغة المناسبة.', 'ai');
   </script>
 </body>
 </html>
