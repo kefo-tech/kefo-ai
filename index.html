@@ -1442,14 +1442,7 @@
       }
     });
 
-    document.addEventListener('touchstart', (e) => {
-      if(e.touches && e.touches.length === 1){
-        clearTimeout(longPressTimer);
-        longPressTimer = setTimeout(() => {
-          triggerSecurityAlert('long-press');
-        }, 420);
-      }
-    }, { passive:true });
+    if (duration > 600 && duration < 2000 && !touchMoved)
 
     document.addEventListener('touchend', () => {
       clearTimeout(longPressTimer);
