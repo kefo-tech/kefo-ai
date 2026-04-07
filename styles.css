@@ -10,11 +10,11 @@
   --panel:rgba(8, 17, 28, 0.7);
   --panel-border:rgba(115, 223, 255, 0.14);
   --shadow:0 20px 60px rgba(0,0,0,0.55);
-  --radius:28px;
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;width:100%;height:100%}
+
 body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
@@ -53,10 +53,11 @@ img{user-select:none;-webkit-user-drag:none}
   width:100%;
   height:100%;
   display:grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows:minmax(0, 1fr) auto;
   gap:10px;
 }
 
+/* ===== persona area ===== */
 .persona-zone{
   position:relative;
   min-height:0;
@@ -117,7 +118,7 @@ img{user-select:none;-webkit-user-drag:none}
 .persona-stack{
   position:relative;
   width:min(82vw, 460px);
-  aspect-ratio: 0.67 / 1;
+  aspect-ratio:0.67 / 1;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -281,6 +282,7 @@ img{user-select:none;-webkit-user-drag:none}
   opacity:0;
   transition:opacity .25s ease;
 }
+
 .voice-wave span{
   width:4px;
   height:12px;
@@ -289,6 +291,7 @@ img{user-select:none;-webkit-user-drag:none}
   box-shadow:0 0 12px rgba(104,236,255,0.3);
   animation:waveBar .9s ease-in-out infinite;
 }
+
 .voice-wave span:nth-child(2){animation-delay:.08s}
 .voice-wave span:nth-child(3){animation-delay:.16s}
 .voice-wave span:nth-child(4){animation-delay:.24s}
@@ -299,6 +302,53 @@ img{user-select:none;-webkit-user-drag:none}
   50%{height:34px; opacity:1}
 }
 
+/* ===== face ui ===== */
+.face-ui{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:6;
+}
+
+.eye{
+  position:absolute;
+  width:14%;
+  height:8%;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(120,240,255,0.34), rgba(120,240,255,0.08) 42%, transparent 72%);
+  mix-blend-mode:screen;
+  transition:transform 0.08s linear, opacity 0.12s ease;
+  opacity:.85;
+  filter:blur(.4px);
+}
+
+.left-eye{
+  top:42%;
+  left:29.6%;
+}
+
+.right-eye{
+  top:42%;
+  right:29.6%;
+}
+
+.mouth{
+  position:absolute;
+  left:50%;
+  bottom:27.4%;
+  transform:translateX(-50%) scaleY(1);
+  width:20%;
+  height:5.5%;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(120,240,255,0.22), rgba(120,240,255,0.06) 52%, transparent 74%);
+  mix-blend-mode:screen;
+  transition:transform 0.08s linear, opacity 0.08s linear;
+  opacity:.5;
+  filter:blur(.6px);
+}
+
+/* ===== state line ===== */
 .state-line{
   position:absolute;
   bottom:22px;
@@ -321,18 +371,20 @@ img{user-select:none;-webkit-user-drag:none}
   box-shadow:0 0 16px rgba(104,236,255,0.7);
   animation:dotPulse 1.7s ease-in-out infinite;
 }
+
 @keyframes dotPulse{
   0%,100%{transform:scale(1)}
   50%{transform:scale(1.35)}
 }
 
+/* ===== dialogue ===== */
 .dialogue-panel{
   margin:0 12px 12px;
   padding:10px 10px 10px;
   background:linear-gradient(180deg, rgba(9,17,28,0.78), rgba(4,10,18,0.82));
   border:1px solid var(--panel-border);
   border-radius:26px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.55);
+  box-shadow:var(--shadow);
   backdrop-filter:blur(14px);
   min-height:220px;
   max-height:42vh;
@@ -378,6 +430,7 @@ img{user-select:none;-webkit-user-drag:none}
   align-items:flex-start;
   animation:msgIn .24s ease;
 }
+
 @keyframes msgIn{
   from{opacity:0; transform:translateY(8px)}
   to{opacity:1; transform:none}
@@ -413,6 +466,7 @@ img{user-select:none;-webkit-user-drag:none}
   margin-bottom:5px;
 }
 
+/* ===== composer ===== */
 .composer{
   display:grid;
   grid-template-columns:auto 1fr auto auto;
@@ -474,6 +528,7 @@ img{user-select:none;-webkit-user-drag:none}
   opacity:.7;
 }
 
+/* ===== states ===== */
 .persona-zone.state-idle .thinking-core{opacity:0}
 .persona-zone.state-idle .voice-wave{opacity:0}
 
@@ -526,6 +581,7 @@ img{user-select:none;-webkit-user-drag:none}
   50%{opacity:1}
 }
 
+/* ===== desktop ===== */
 @media (min-width: 860px){
   .stage{
     grid-template-columns:minmax(320px, 520px) minmax(360px, 660px);
@@ -539,7 +595,7 @@ img{user-select:none;-webkit-user-drag:none}
     border-radius:34px;
     border:1px solid rgba(104,236,255,0.08);
     background:linear-gradient(180deg, rgba(8,14,24,0.52), rgba(5,10,18,0.3));
-    box-shadow:0 20px 60px rgba(0,0,0,0.55);
+    box-shadow:var(--shadow);
   }
 
   .dialogue-panel{
