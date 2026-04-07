@@ -1,4 +1,3 @@
-// script.js
 const app = document.getElementById("app");
 const personaZone = document.getElementById("personaZone");
 const personaFrame = document.getElementById("personaFrame");
@@ -24,10 +23,24 @@ let recognition = null;
 let isListening = false;
 let isSpeaking = false;
 let particles = [];
-let emitters = [];
 let pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-let lastAnswerText = "";
 let typeToken = 0;
+
+/* ===== حركة الشخصية الحية ===== */
+let personaMotion = {
+  baseX: 0,
+  baseY: 0,
+  targetX: 0,
+  targetY: 0,
+  currentX: 0,
+  currentY: 0,
+  targetRotX: 0,
+  targetRotY: 0,
+  currentRotX: 0,
+  currentRotY: 0,
+  speakPower: 0,
+  listenPower: 0
+};
 
 const STOP_WORDS = [
   "ما", "ماذا", "من", "هو", "هي", "عن", "في", "هل", "كم", "كيف", "أين", "اين",
@@ -92,17 +105,13 @@ function addMessage(role, text, opts = {}) {
   transcript.appendChild(wrapper);
   transcript.scrollTop = transcript.scrollHeight;
 
-  if (opts.typing) {
-    return body;
-  }
+  if (opts.typing) return body;
   return body;
 }
 
 function clearTranscript() {
   transcript.innerHTML = "";
-  lastAnswerText = "";
 }
-
 clearBtn.addEventListener("click", clearTranscript);
 
 toggleTranscriptBtn.addEventListener("click", () => {
@@ -133,7 +142,6 @@ function extractArabicKeyword(text) {
     return words[words.length - 1] || cleaned;
   }
 
-  // محاولة أخذ أفضل عبارة مكونة من كلمة أو كلمتين
   if (filtered.length >= 2) {
     return `${filtered[0]} ${filtered[1]}`.trim();
   }
@@ -196,7 +204,6 @@ async function typeIntoElement(el, text, speed = 16) {
   typeToken += 1;
   const currentToken = typeToken;
   el.textContent = "";
-  lastAnswerText = text;
 
   for (let i = 0; i < text.length; i++) {
     if (currentToken !== typeToken) return;
@@ -223,7 +230,7 @@ function speakText(text) {
   utterance.onstart = () => {
     isSpeaking = true;
     setState("speaking");
-    burstFromPersona(26, "#8ffcff", 2.2);
+    burstFromPersona(28, "#8ffcff", 2.2);
   };
 
   utterance.onend = () => {
@@ -450,7 +457,6 @@ function hexToRgb(hex) {
 function animateFX() {
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-  // روابط خفيفة في الخلفية
   for (let i = 0; i < 14; i++) {
     const y = (window.innerHeight * 0.12) + i * 34 + Math.sin((Date.now() * 0.001) + i) * 6;
     const alpha = 0.03 + (i % 4) * 0.006;
@@ -505,7 +511,8 @@ function animateFX() {
 }
 animateFX();
 
-function updateParallax(clientX, clientY) {
+/* ===== هنا الحركة الحقيقية للشخصية ===== */
+function updatePointerTargets(clientX, clientY) {
   const rect = personaFrame.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
@@ -513,38 +520,84 @@ function updateParallax(clientX, clientY) {
   const dx = (clientX - cx) / rect.width;
   const dy = (clientY - cy) / rect.height;
 
-  const rotateY = Math.max(-7, Math.min(7, dx * 10));
-  const rotateX = Math.max(-6, Math.min(6, -dy * 10));
-  const moveX = dx * 10;
-  const moveY = dy * 10;
-
-  personaFrame.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(${moveX}px, ${moveY}px, 0)`;
-  personaImage.style.transform = `scale(1.02) translate3d(${moveX * 0.65}px, ${moveY * 0.65}px, 0)`;
+  personaMotion.targetRotY = Math.max(-8, Math.min(8, dx * 11));
+  personaMotion.targetRotX = Math.max(-7, Math.min(7, -dy * 10));
+  personaMotion.targetX = dx * 10;
+  personaMotion.targetY = dy * 8;
 }
 
-function resetParallax() {
-  personaFrame.style.transform = `perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0,0,0)`;
-  personaImage.style.transform = `scale(1) translate3d(0,0,0)`;
+function animatePersona() {
+  const now = performance.now() * 0.001;
+
+  const idleFloatY = Math.sin(now * 1.35) * 4.5;
+  const idleFloatX = Math.cos(now * 0.92) * 2.2;
+  const idleRotZ = Math.sin(now * 0.8) * 0.6;
+  const breathe = Math.sin(now * 1.1) * 0.012;
+
+  personaMotion.listenPower += ((isListening ? 1 : 0) - personaMotion.listenPower) * 0.08;
+  personaMotion.speakPower += ((isSpeaking ? 1 : 0) - personaMotion.speakPower) * 0.12;
+
+  personaMotion.currentX += (personaMotion.targetX - personaMotion.currentX) * 0.07;
+  personaMotion.currentY += (personaMotion.targetY - personaMotion.currentY) * 0.07;
+  personaMotion.currentRotX += (personaMotion.targetRotX - personaMotion.currentRotX) * 0.07;
+  personaMotion.currentRotY += (personaMotion.targetRotY - personaMotion.currentRotY) * 0.07;
+
+  const listenTilt = Math.sin(now * 4.2) * 1.4 * personaMotion.listenPower;
+  const listenShift = Math.cos(now * 3.6) * 3.5 * personaMotion.listenPower;
+
+  const speakPulse = Math.sin(now * 8.4) * 1.6 * personaMotion.speakPower;
+  const speakLift = Math.abs(Math.sin(now * 7.2)) * 5.5 * personaMotion.speakPower;
+  const speakScale = 1 + (0.018 * personaMotion.speakPower) + breathe;
+
+  const frameX = idleFloatX + personaMotion.currentX + listenShift;
+  const frameY = idleFloatY + personaMotion.currentY - speakLift * 0.2;
+  const rotX = personaMotion.currentRotX + (personaMotion.listenPower * 1.3);
+  const rotY = personaMotion.currentRotY + listenTilt;
+  const rotZ = idleRotZ + speakPulse * 0.2;
+
+  personaFrame.style.transform =
+    `perspective(1200px) translate3d(${frameX}px, ${frameY}px, 0) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+
+  const imgX = frameX * 0.45 + Math.sin(now * 1.8) * 1.5;
+  const imgY = frameY * 0.38 - breathe * 60 - speakLift * 0.35;
+  const imgRot = rotZ * 0.3;
+
+  personaImage.style.transform =
+    `translate3d(${imgX}px, ${imgY}px, 0) scale(${speakScale}) rotate(${imgRot}deg)`;
+
+  requestAnimationFrame(animatePersona);
 }
+animatePersona();
 
 window.addEventListener("mousemove", (e) => {
   pointer.x = e.clientX;
   pointer.y = e.clientY;
-  updateParallax(pointer.x, pointer.y);
+  updatePointerTargets(pointer.x, pointer.y);
 });
 
 window.addEventListener("touchmove", (e) => {
   if (!e.touches[0]) return;
   pointer.x = e.touches[0].clientX;
   pointer.y = e.touches[0].clientY;
-  updateParallax(pointer.x, pointer.y);
+  updatePointerTargets(pointer.x, pointer.y);
 }, { passive: true });
 
-window.addEventListener("touchend", resetParallax, { passive: true });
-window.addEventListener("mouseleave", resetParallax);
+window.addEventListener("touchend", () => {
+  personaMotion.targetX = 0;
+  personaMotion.targetY = 0;
+  personaMotion.targetRotX = 0;
+  personaMotion.targetRotY = 0;
+}, { passive: true });
+
+window.addEventListener("mouseleave", () => {
+  personaMotion.targetX = 0;
+  personaMotion.targetY = 0;
+  personaMotion.targetRotX = 0;
+  personaMotion.targetRotY = 0;
+});
+
 window.addEventListener("resize", () => {
   resizeCanvas();
-  resetParallax();
 });
 
 setState("idle");
