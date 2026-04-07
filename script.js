@@ -47,7 +47,11 @@ let mouthMotion = {
   openness: 0,
   target: 0,
   width: 1,
-  talkingPhase: 0
+  talkingPhase: 0,
+  randomGate: 0,
+  randomAmount: 0.45,
+  widthAmount: 0.08,
+  speedAmount: 1
 };
 
 let personaMotion = {
@@ -601,31 +605,51 @@ function animateEyesAndMouth() {
   eyeMotion.x += (eyeMotion.tx - eyeMotion.x) * 0.18;
   eyeMotion.y += (eyeMotion.ty - eyeMotion.y) * 0.18;
 
-  let blinkScale = eyeMotion.blink;
+  const blinkScale = eyeMotion.blink;
 
   leftEye.style.transform = `translate(${eyeMotion.x}px, ${eyeMotion.y}px) scaleY(${blinkScale})`;
   rightEye.style.transform = `translate(${eyeMotion.x}px, ${eyeMotion.y}px) scaleY(${blinkScale})`;
 
   if (isSpeaking) {
-    mouthMotion.talkingPhase += 0.34;
+
+    if (now > mouthMotion.randomGate) {
+      mouthMotion.randomGate = now + (0.06 + Math.random() * 0.14);
+      mouthMotion.randomAmount = 0.25 + Math.random() * 0.95;
+      mouthMotion.widthAmount = -0.08 + Math.random() * 0.22;
+      mouthMotion.speedAmount = 0.7 + Math.random() * 1.6;
+    }
+
+    mouthMotion.talkingPhase += 0.20 * mouthMotion.speedAmount;
+
     const waveA = (Math.sin(mouthMotion.talkingPhase) + 1) / 2;
-    const waveB = (Math.sin(mouthMotion.talkingPhase * 1.7) + 1) / 2;
-    mouthMotion.target = 0.28 + waveA * 0.55 + waveB * 0.18;
+    const waveB = (Math.sin(mouthMotion.talkingPhase * 1.83 + 0.7) + 1) / 2;
+    const waveC = (Math.sin(mouthMotion.talkingPhase * 2.45 + 1.4) + 1) / 2;
+
+    const mixed =
+      (waveA * 0.5) +
+      (waveB * 0.32) +
+      (waveC * 0.18);
+
+    mouthMotion.target = 0.12 + (mixed * mouthMotion.randomAmount);
+
   } else {
-    mouthMotion.target = 0.04;
+    mouthMotion.target = 0.02;
+    mouthMotion.widthAmount *= 0.9;
   }
 
-  mouthMotion.openness += (mouthMotion.target - mouthMotion.openness) * 0.24;
-  mouthMotion.width = 1 + mouthMotion.openness * 0.24;
+  mouthMotion.openness += (mouthMotion.target - mouthMotion.openness) * 0.22;
 
-  const mouthScaleY = 1 + mouthMotion.openness * 1.9;
-  const mouthScaleX = mouthMotion.width;
-  const mouthLift = mouthMotion.openness * -1.8;
-  const mouthOpacity = 0.34 + mouthMotion.openness * 0.62;
+  const mouthScaleY = 1 + mouthMotion.openness * 3.0;
+  const mouthScaleX = 1 + (mouthMotion.openness * 0.12) + mouthMotion.widthAmount;
+  const mouthLift = mouthMotion.openness * -2.2;
+  const mouthOpacity = 0.22 + mouthMotion.openness * 0.72;
+  const mouthBlurGlow = 0.35 + mouthMotion.openness * 0.9;
 
   mouth.style.transform =
     `translateX(-50%) translateY(${mouthLift}px) scaleX(${mouthScaleX}) scaleY(${mouthScaleY})`;
+
   mouth.style.opacity = `${mouthOpacity}`;
+  mouth.style.filter = `blur(${mouthBlurGlow}px)`;
 
   requestAnimationFrame(animateEyesAndMouth);
 }
