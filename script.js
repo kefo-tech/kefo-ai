@@ -14,6 +14,10 @@ const toggleTranscriptBtn = document.getElementById("toggleTranscriptBtn");
 const voiceWave = document.getElementById("voiceWave");
 const thinkingCore = document.getElementById("thinkingCore");
 
+const leftEye = document.getElementById("leftEye");
+const rightEye = document.getElementById("rightEye");
+const mouth = document.getElementById("mouth");
+
 const canvas = document.getElementById("fxCanvas");
 const ctx = canvas.getContext("2d", { alpha: true });
 
@@ -23,21 +27,38 @@ let recognition = null;
 let isListening = false;
 let isSpeaking = false;
 let particles = [];
-let pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 let typeToken = 0;
 
-/* ===== حركة الشخصية الحية ===== */
+let pointer = {
+  x: window.innerWidth / 2,
+  y: window.innerHeight / 2
+};
+
+let eyeMotion = {
+  x: 0,
+  y: 0,
+  tx: 0,
+  ty: 0,
+  blink: 1,
+  blinking: false
+};
+
+let mouthMotion = {
+  openness: 0,
+  target: 0,
+  width: 1,
+  talkingPhase: 0
+};
+
 let personaMotion = {
-  baseX: 0,
-  baseY: 0,
-  targetX: 0,
-  targetY: 0,
-  currentX: 0,
-  currentY: 0,
-  targetRotX: 0,
-  targetRotY: 0,
-  currentRotX: 0,
-  currentRotY: 0,
+  x: 0,
+  y: 0,
+  tx: 0,
+  ty: 0,
+  rx: 0,
+  ry: 0,
+  trx: 0,
+  try: 0,
   speakPower: 0,
   listenPower: 0
 };
@@ -162,7 +183,7 @@ async function fetchWikipediaSummary(query) {
 
   try {
     const summaryRes = await fetch(endpoints[0], {
-      headers: { "accept": "application/json" }
+      headers: { accept: "application/json" }
     });
 
     if (summaryRes.ok) {
@@ -179,7 +200,7 @@ async function fetchWikipediaSummary(query) {
     if (bestTitle) {
       const retryRes = await fetch(
         `https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`,
-        { headers: { "accept": "application/json" } }
+        { headers: { accept: "application/json" } }
       );
       const retryData = await retryRes.json();
       if (retryData.extract) {
@@ -235,11 +256,13 @@ function speakText(text) {
 
   utterance.onend = () => {
     isSpeaking = false;
+    mouthMotion.target = 0;
     if (!isListening) setState("idle");
   };
 
   utterance.onerror = () => {
     isSpeaking = false;
+    mouthMotion.target = 0;
     if (!isListening) setState("idle");
   };
 
@@ -254,6 +277,7 @@ soundBtn.addEventListener("click", () => {
   if (!soundEnabled && "speechSynthesis" in window) {
     window.speechSynthesis.cancel();
     isSpeaking = false;
+    mouthMotion.target = 0;
     if (!isListening) setState("idle");
   }
 });
@@ -511,7 +535,6 @@ function animateFX() {
 }
 animateFX();
 
-/* ===== هنا الحركة الحقيقية للشخصية ===== */
 function updatePointerTargets(clientX, clientY) {
   const rect = personaFrame.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
@@ -520,10 +543,13 @@ function updatePointerTargets(clientX, clientY) {
   const dx = (clientX - cx) / rect.width;
   const dy = (clientY - cy) / rect.height;
 
-  personaMotion.targetRotY = Math.max(-8, Math.min(8, dx * 11));
-  personaMotion.targetRotX = Math.max(-7, Math.min(7, -dy * 10));
-  personaMotion.targetX = dx * 10;
-  personaMotion.targetY = dy * 8;
+  personaMotion.try = Math.max(-8, Math.min(8, dx * 11));
+  personaMotion.trx = Math.max(-7, Math.min(7, -dy * 10));
+  personaMotion.tx = dx * 10;
+  personaMotion.ty = dy * 8;
+
+  eyeMotion.tx = dx * 5;
+  eyeMotion.ty = dy * 3.5;
 }
 
 function animatePersona() {
@@ -537,10 +563,10 @@ function animatePersona() {
   personaMotion.listenPower += ((isListening ? 1 : 0) - personaMotion.listenPower) * 0.08;
   personaMotion.speakPower += ((isSpeaking ? 1 : 0) - personaMotion.speakPower) * 0.12;
 
-  personaMotion.currentX += (personaMotion.targetX - personaMotion.currentX) * 0.07;
-  personaMotion.currentY += (personaMotion.targetY - personaMotion.currentY) * 0.07;
-  personaMotion.currentRotX += (personaMotion.targetRotX - personaMotion.currentRotX) * 0.07;
-  personaMotion.currentRotY += (personaMotion.targetRotY - personaMotion.currentRotY) * 0.07;
+  personaMotion.x += (personaMotion.tx - personaMotion.x) * 0.07;
+  personaMotion.y += (personaMotion.ty - personaMotion.y) * 0.07;
+  personaMotion.rx += (personaMotion.trx - personaMotion.rx) * 0.07;
+  personaMotion.ry += (personaMotion.try - personaMotion.ry) * 0.07;
 
   const listenTilt = Math.sin(now * 4.2) * 1.4 * personaMotion.listenPower;
   const listenShift = Math.cos(now * 3.6) * 3.5 * personaMotion.listenPower;
@@ -549,10 +575,10 @@ function animatePersona() {
   const speakLift = Math.abs(Math.sin(now * 7.2)) * 5.5 * personaMotion.speakPower;
   const speakScale = 1 + (0.018 * personaMotion.speakPower) + breathe;
 
-  const frameX = idleFloatX + personaMotion.currentX + listenShift;
-  const frameY = idleFloatY + personaMotion.currentY - speakLift * 0.2;
-  const rotX = personaMotion.currentRotX + (personaMotion.listenPower * 1.3);
-  const rotY = personaMotion.currentRotY + listenTilt;
+  const frameX = idleFloatX + personaMotion.x + listenShift;
+  const frameY = idleFloatY + personaMotion.y - speakLift * 0.2;
+  const rotX = personaMotion.rx + (personaMotion.listenPower * 1.3);
+  const rotY = personaMotion.ry + listenTilt;
   const rotZ = idleRotZ + speakPulse * 0.2;
 
   personaFrame.style.transform =
@@ -569,6 +595,62 @@ function animatePersona() {
 }
 animatePersona();
 
+function animateEyesAndMouth() {
+  const now = performance.now() * 0.001;
+
+  eyeMotion.x += (eyeMotion.tx - eyeMotion.x) * 0.18;
+  eyeMotion.y += (eyeMotion.ty - eyeMotion.y) * 0.18;
+
+  let blinkScale = eyeMotion.blink;
+
+  leftEye.style.transform = `translate(${eyeMotion.x}px, ${eyeMotion.y}px) scaleY(${blinkScale})`;
+  rightEye.style.transform = `translate(${eyeMotion.x}px, ${eyeMotion.y}px) scaleY(${blinkScale})`;
+
+  if (isSpeaking) {
+    mouthMotion.talkingPhase += 0.34;
+    const waveA = (Math.sin(mouthMotion.talkingPhase) + 1) / 2;
+    const waveB = (Math.sin(mouthMotion.talkingPhase * 1.7) + 1) / 2;
+    mouthMotion.target = 0.28 + waveA * 0.55 + waveB * 0.18;
+  } else {
+    mouthMotion.target = 0.04;
+  }
+
+  mouthMotion.openness += (mouthMotion.target - mouthMotion.openness) * 0.24;
+  mouthMotion.width = 1 + mouthMotion.openness * 0.24;
+
+  const mouthScaleY = 1 + mouthMotion.openness * 1.9;
+  const mouthScaleX = mouthMotion.width;
+  const mouthLift = mouthMotion.openness * -1.8;
+  const mouthOpacity = 0.34 + mouthMotion.openness * 0.62;
+
+  mouth.style.transform =
+    `translateX(-50%) translateY(${mouthLift}px) scaleX(${mouthScaleX}) scaleY(${mouthScaleY})`;
+  mouth.style.opacity = `${mouthOpacity}`;
+
+  requestAnimationFrame(animateEyesAndMouth);
+}
+animateEyesAndMouth();
+
+function triggerBlink() {
+  if (eyeMotion.blinking) return;
+  eyeMotion.blinking = true;
+
+  eyeMotion.blink = 0.08;
+  setTimeout(() => {
+    eyeMotion.blink = 1;
+    eyeMotion.blinking = false;
+  }, 120);
+}
+
+function blinkLoop() {
+  const delay = 2200 + Math.random() * 2600;
+  setTimeout(() => {
+    triggerBlink();
+    blinkLoop();
+  }, delay);
+}
+blinkLoop();
+
 window.addEventListener("mousemove", (e) => {
   pointer.x = e.clientX;
   pointer.y = e.clientY;
@@ -583,17 +665,21 @@ window.addEventListener("touchmove", (e) => {
 }, { passive: true });
 
 window.addEventListener("touchend", () => {
-  personaMotion.targetX = 0;
-  personaMotion.targetY = 0;
-  personaMotion.targetRotX = 0;
-  personaMotion.targetRotY = 0;
+  personaMotion.tx = 0;
+  personaMotion.ty = 0;
+  personaMotion.trx = 0;
+  personaMotion.try = 0;
+  eyeMotion.tx = 0;
+  eyeMotion.ty = 0;
 }, { passive: true });
 
 window.addEventListener("mouseleave", () => {
-  personaMotion.targetX = 0;
-  personaMotion.targetY = 0;
-  personaMotion.targetRotX = 0;
-  personaMotion.targetRotY = 0;
+  personaMotion.tx = 0;
+  personaMotion.ty = 0;
+  personaMotion.trx = 0;
+  personaMotion.try = 0;
+  eyeMotion.tx = 0;
+  eyeMotion.ty = 0;
 });
 
 window.addEventListener("resize", () => {
