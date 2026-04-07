@@ -547,50 +547,50 @@ function updatePointerTargets(clientX, clientY) {
   const dx = (clientX - cx) / rect.width;
   const dy = (clientY - cy) / rect.height;
 
-  personaMotion.try = Math.max(-8, Math.min(8, dx * 11));
-  personaMotion.trx = Math.max(-7, Math.min(7, -dy * 10));
-  personaMotion.tx = dx * 10;
-  personaMotion.ty = dy * 8;
+  personaMotion.try = Math.max(-4, Math.min(4, dx * 5));
+personaMotion.trx = Math.max(-3, Math.min(3, -dy * 4));
+personaMotion.tx = dx * 4;
+personaMotion.ty = dy * 3;
 
-  eyeMotion.tx = dx * 5;
-  eyeMotion.ty = dy * 3.5;
+eyeMotion.tx = dx * 3.5;
+eyeMotion.ty = dy * 2.5;
 }
 
 function animatePersona() {
   const now = performance.now() * 0.001;
 
-  const idleFloatY = Math.sin(now * 1.35) * 4.5;
-  const idleFloatX = Math.cos(now * 0.92) * 2.2;
-  const idleRotZ = Math.sin(now * 0.8) * 0.6;
-  const breathe = Math.sin(now * 1.1) * 0.012;
+  const idleFloatY = Math.sin(now * 0.7) * 2.2;
+  const idleFloatX = Math.cos(now * 0.45) * 1.2;
+  const idleRotZ = Math.sin(now * 0.35) * 0.18;
+  const breathe = Math.sin(now * 0.9) * 0.008;
 
-  personaMotion.listenPower += ((isListening ? 1 : 0) - personaMotion.listenPower) * 0.08;
-  personaMotion.speakPower += ((isSpeaking ? 1 : 0) - personaMotion.speakPower) * 0.12;
+  personaMotion.listenPower += ((isListening ? 1 : 0) - personaMotion.listenPower) * 0.05;
+  personaMotion.speakPower += ((isSpeaking ? 1 : 0) - personaMotion.speakPower) * 0.08;
 
-  personaMotion.x += (personaMotion.tx - personaMotion.x) * 0.07;
-  personaMotion.y += (personaMotion.ty - personaMotion.y) * 0.07;
-  personaMotion.rx += (personaMotion.trx - personaMotion.rx) * 0.07;
-  personaMotion.ry += (personaMotion.try - personaMotion.ry) * 0.07;
+  personaMotion.x += (personaMotion.tx - personaMotion.x) * 0.04;
+  personaMotion.y += (personaMotion.ty - personaMotion.y) * 0.04;
+  personaMotion.rx += (personaMotion.trx - personaMotion.rx) * 0.04;
+  personaMotion.ry += (personaMotion.try - personaMotion.ry) * 0.04;
 
-  const listenTilt = Math.sin(now * 4.2) * 1.4 * personaMotion.listenPower;
-  const listenShift = Math.cos(now * 3.6) * 3.5 * personaMotion.listenPower;
+  const listenTilt = Math.sin(now * 1.8) * 0.45 * personaMotion.listenPower;
+  const listenShift = Math.cos(now * 1.5) * 1.2 * personaMotion.listenPower;
 
-  const speakPulse = Math.sin(now * 8.4) * 1.6 * personaMotion.speakPower;
-  const speakLift = Math.abs(Math.sin(now * 7.2)) * 5.5 * personaMotion.speakPower;
-  const speakScale = 1 + (0.018 * personaMotion.speakPower) + breathe;
+  const speakPulse = Math.sin(now * 4.2) * 0.35 * personaMotion.speakPower;
+  const speakLift = Math.abs(Math.sin(now * 3.8)) * 1.4 * personaMotion.speakPower;
+  const speakScale = 1 + (0.008 * personaMotion.speakPower) + breathe;
 
   const frameX = idleFloatX + personaMotion.x + listenShift;
-  const frameY = idleFloatY + personaMotion.y - speakLift * 0.2;
-  const rotX = personaMotion.rx + (personaMotion.listenPower * 1.3);
+  const frameY = idleFloatY + personaMotion.y - speakLift * 0.15;
+  const rotX = personaMotion.rx + (personaMotion.listenPower * 0.35);
   const rotY = personaMotion.ry + listenTilt;
-  const rotZ = idleRotZ + speakPulse * 0.2;
+  const rotZ = idleRotZ + speakPulse * 0.08;
 
   personaFrame.style.transform =
     `perspective(1200px) translate3d(${frameX}px, ${frameY}px, 0) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
 
-  const imgX = frameX * 0.45 + Math.sin(now * 1.8) * 1.5;
-  const imgY = frameY * 0.38 - breathe * 60 - speakLift * 0.35;
-  const imgRot = rotZ * 0.3;
+  const imgX = frameX * 0.22;
+  const imgY = frameY * 0.18 - breathe * 18;
+  const imgRot = rotZ * 0.2;
 
   personaImage.style.transform =
     `translate3d(${imgX}px, ${imgY}px, 0) scale(${speakScale}) rotate(${imgRot}deg)`;
@@ -676,8 +676,8 @@ function blinkLoop() {
 blinkLoop();
 
 window.addEventListener("mousemove", (e) => {
-  pointer.x = e.clientX;
-  pointer.y = e.clientY;
+  pointer.x += (e.clientX - pointer.x) * 0.25;
+pointer.y += (e.clientY - pointer.y) * 0.25;
   updatePointerTargets(pointer.x, pointer.y);
 });
 
