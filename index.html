@@ -3,63 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KeFo AI Persona</title>
+  <title>KeFo AI Entity</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app" id="app">
-    <canvas id="fxCanvas" aria-hidden="true"></canvas>
+    <canvas id="bgCanvas"></canvas>
+    <canvas id="faceCanvas"></canvas>
+    <canvas id="fxCanvas"></canvas>
 
-    <main class="stage">
-      <section class="persona-zone state-idle" id="personaZone">
-        <div class="bg-grid"></div>
-        <div class="bg-vignette"></div>
-        <div class="signal signal-1"></div>
-        <div class="signal signal-2"></div>
-        <div class="signal signal-3"></div>
-
-        <div class="persona-stack">
-          <div class="persona-glow"></div>
-          <div class="persona-scan"></div>
-          <div class="persona-pulse-ring ring-a"></div>
-          <div class="persona-pulse-ring ring-b"></div>
-
-          <div class="persona-frame" id="personaFrame">
-            <img
-              src="persona.jpg"
-              alt="AI Persona"
-              class="persona-image"
-              id="personaImage"
-              draggable="false"
-            />
-
-            <div class="persona-overlay persona-overlay-grid"></div>
-            <div class="persona-overlay persona-overlay-fragment"></div>
-            <div class="persona-overlay persona-overlay-light"></div>
-
-            <div class="thinking-core" id="thinkingCore"></div>
-
-            <div class="voice-wave" id="voiceWave">
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-
-            <!-- طبقات حركة الوجه -->
-            <div class="face-ui">
-              <div class="eye left-eye" id="leftEye"></div>
-              <div class="eye right-eye" id="rightEye"></div>
-              <div class="mouth" id="mouth"></div>
-            </div>
-          </div>
+    <main class="ui-layer">
+      <section class="status-bar">
+        <div class="status-pill">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">جاهز</span>
         </div>
 
-        <div class="state-line">
-          <span class="state-dot"></span>
-          <span class="state-text" id="stateText">جاهز</span>
-        </div>
+        <button class="icon-btn sound-btn is-on" id="soundBtn" type="button" aria-label="الصوت">
+          <span id="soundIcon">🔊</span>
+        </button>
       </section>
 
-      <section class="dialogue-panel" id="dialoguePanel">
-        <div class="dialogue-head">
+      <section class="transcript-panel" id="transcriptPanel">
+        <div class="transcript-head">
           <button class="ghost-btn" id="toggleTranscriptBtn" type="button">إخفاء النص</button>
           <button class="ghost-btn" id="clearBtn" type="button">مسح</button>
         </div>
@@ -82,10 +48,6 @@
 
           <button class="circle-btn send-btn" id="sendBtn" type="button" aria-label="إرسال">
             <span>➜</span>
-          </button>
-
-          <button class="circle-btn sound-btn is-on" id="soundBtn" type="button" aria-label="الصوت">
-            <span id="soundIcon">🔊</span>
           </button>
         </div>
       </section>
