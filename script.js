@@ -31,35 +31,47 @@ const pointer = {
   x: w * 0.5,
   y: h * 0.42,
   tx: w * 0.5,
-  ty: h * 0.42
+  ty: h * 0.42,
 };
 
 const entity = {
   cx: w * 0.5,
-  cy: h * 0.39,
-  scale: Math.min(w, h) * 0.17,
-  idlePhase: 0,
-  eyeOpen: 1,
-  blinkTimer: 0,
-  blinkCooldown: 0,
+  cy: h * 0.38,
+  scale: Math.min(w, h) * 0.2,
+
   eyeLookX: 0,
   eyeLookY: 0,
   eyeTargetX: 0,
   eyeTargetY: 0,
+
+  eyeOpen: 1,
+  blinkT: 0,
+  blinkCooldown: 0,
+
   mouthOpen: 0,
   mouthTarget: 0,
   mouthPhase: 0,
-  mouthRandGate: 0,
-  mouthRandAmp: 0.3,
-  mouthRandWidth: 0.04,
-  waveDrift: 0,
+  mouthGate: 0,
+  mouthAmp: 0.34,
+  mouthWidth: 0.02,
+  mouthSpeed: 1,
+
+  hoverX: 0,
+  hoverY: 0,
+  hoverRX: 0,
+  hoverRY: 0,
+
   listenGlow: 0,
   thinkGlow: 0,
-  speakGlow: 0
+  speakGlow: 0,
+
+  orbitPhase: 0,
+  faceNoise: 0,
 };
 
-let fxParticles = [];
 let bgNodes = [];
+let fxParticles = [];
+let orbitParticles = [];
 
 const STOP_WORDS = [
   "ما", "ماذا", "من", "هو", "هي", "عن", "في", "هل", "كم", "كيف", "أين", "اين",
@@ -91,28 +103,42 @@ function resizeAll() {
   faceCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  entity.cx = w * 0.5;
-  entity.cy = h * (w >= 860 ? 0.46 : 0.36);
-  entity.scale = Math.min(w, h) * (w >= 860 ? 0.17 : 0.19);
+  entity.cx = w >= 860 ? w * 0.33 : w * 0.5;
+  entity.cy = h * (w >= 860 ? 0.48 : 0.36);
+  entity.scale = Math.min(w, h) * (w >= 860 ? 0.24 : 0.215);
 
   initBgNodes();
+  initOrbitParticles();
 }
 resizeAll();
 
 function initBgNodes() {
   bgNodes = [];
-  const count = Math.max(36, Math.floor((w * h) / 38000));
+  const count = Math.max(42, Math.floor((w * h) / 30000));
   for (let i = 0; i < count; i++) {
     bgNodes.push({
       x: Math.random() * w,
       y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.08,
-      vy: (Math.random() - 0.5) * 0.08,
-      r: 1 + Math.random() * 1.8
+      vx: (Math.random() - 0.5) * 0.06,
+      vy: (Math.random() - 0.5) * 0.06,
+      r: 0.8 + Math.random() * 2,
     });
   }
 }
-initBgNodes();
+
+function initOrbitParticles() {
+  orbitParticles = [];
+  for (let i = 0; i < 120; i++) {
+    orbitParticles.push({
+      a: Math.random() * Math.PI * 2,
+      r: entity.scale * (0.8 + Math.random() * 1.25),
+      s: 0.0008 + Math.random() * 0.0018,
+      yShift: (Math.random() - 0.5) * entity.scale * 0.3,
+      alpha: 0.08 + Math.random() * 0.26,
+      size: 0.8 + Math.random() * 1.8,
+    });
+  }
+}
 
 function setState(next) {
   appState = next;
@@ -215,7 +241,7 @@ async function fetchWikipediaSummary(query) {
     }
 
     return `لم أجد نتيجة عربية واضحة في ويكيبيديا عن: ${term}`;
-  } catch (error) {
+  } catch {
     return "تعذر الاتصال بويكيبيديا حاليًا.";
   }
 }
@@ -231,7 +257,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function typeIntoElement(el, text, speed = 16) {
+async function typeIntoElement(el, text, speed = 14) {
   typeToken += 1;
   const currentToken = typeToken;
   el.textContent = "";
@@ -252,12 +278,12 @@ function speakText(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ar-SA";
   utterance.rate = 1;
-  utterance.pitch = 0.82;
+  utterance.pitch = 0.7;
 
   utterance.onstart = () => {
     isSpeaking = true;
     setState("speaking");
-    spawnBurst(entity.cx, entity.cy + entity.scale * 0.05, 22, "116,239,255");
+    spawnBurst(entity.cx, entity.cy + entity.scale * 0.12, 28, "116,239,255");
   };
 
   utterance.onend = () => {
@@ -306,14 +332,11 @@ async function handlePrompt(rawText) {
   const typingBody = addMessage("ai", "", { typing: true });
   const response = await fetchWikipediaSummary(text);
 
-  spawnBurst(entity.cx, entity.cy - entity.scale * 0.1, 30, "120,240,255");
+  spawnBurst(entity.cx, entity.cy - entity.scale * 0.05, 36, "140,245,255");
   await typeIntoElement(typingBody, response, 12);
 
-  if (soundEnabled) {
-    speakText(response);
-  } else {
-    setState("idle");
-  }
+  if (soundEnabled) speakText(response);
+  else setState("idle");
 }
 
 sendBtn.addEventListener("click", () => handlePrompt(promptInput.value));
@@ -341,7 +364,7 @@ function initRecognition() {
     isListening = true;
     setState("listening");
     finalTranscript = "";
-    spawnBurst(entity.cx, entity.cy, 18, "100,224,255");
+    spawnBurst(entity.cx, entity.cy, 20, "100,224,255");
   };
 
   recognition.onresult = (event) => {
@@ -390,20 +413,20 @@ function spawnBurst(x, y, count, color) {
     fxParticles.push({
       x,
       y,
-      vx: (Math.random() - 0.5) * 2.8,
-      vy: (Math.random() - 0.5) * 2.8,
-      life: 24 + Math.random() * 28,
-      maxLife: 24 + Math.random() * 28,
-      size: 1 + Math.random() * 2.6,
+      vx: (Math.random() - 0.5) * 3.4,
+      vy: (Math.random() - 0.5) * 3.4,
+      life: 24 + Math.random() * 30,
+      maxLife: 24 + Math.random() * 30,
+      size: 1 + Math.random() * 2.8,
       color
     });
   }
 }
 
 function spawnInputPulse() {
-  const x = w * 0.5;
+  const x = w >= 860 ? w * 0.72 : w * 0.5;
   const y = h - 140;
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 22; i++) {
     fxParticles.push({
       x: x + (Math.random() - 0.5) * 80,
       y: y + (Math.random() - 0.5) * 20,
@@ -411,7 +434,7 @@ function spawnInputPulse() {
       vy: -0.8 - Math.random() * 1.6,
       life: 18 + Math.random() * 20,
       maxLife: 18 + Math.random() * 20,
-      size: 1 + Math.random() * 2.2,
+      size: 1 + Math.random() * 2.4,
       color: "116,239,255"
     });
   }
@@ -420,22 +443,23 @@ function spawnInputPulse() {
 function drawBackground(now) {
   bgCtx.clearRect(0, 0, w, h);
 
-  const grad = bgCtx.createRadialGradient(w * 0.5, h * 0.4, 0, w * 0.5, h * 0.4, Math.max(w, h) * 0.55);
-  grad.addColorStop(0, "rgba(24,120,200,0.10)");
-  grad.addColorStop(1, "rgba(0,0,0,0)");
-  bgCtx.fillStyle = grad;
+  const g = bgCtx.createRadialGradient(entity.cx, entity.cy, 0, entity.cx, entity.cy, Math.max(w, h) * 0.8);
+  g.addColorStop(0, "rgba(40,130,255,0.08)");
+  g.addColorStop(0.42, "rgba(10,70,130,0.04)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  bgCtx.fillStyle = g;
   bgCtx.fillRect(0, 0, w, h);
 
-  bgCtx.strokeStyle = "rgba(116,239,255,0.04)";
+  bgCtx.strokeStyle = "rgba(116,239,255,0.035)";
   bgCtx.lineWidth = 1;
-  const gridGap = 36;
-  for (let x = 0; x < w; x += gridGap) {
+  const gap = 34;
+  for (let x = 0; x < w; x += gap) {
     bgCtx.beginPath();
     bgCtx.moveTo(x, 0);
     bgCtx.lineTo(x, h);
     bgCtx.stroke();
   }
-  for (let y = 0; y < h; y += gridGap) {
+  for (let y = 0; y < h; y += gap) {
     bgCtx.beginPath();
     bgCtx.moveTo(0, y);
     bgCtx.lineTo(w, y);
@@ -452,7 +476,7 @@ function drawBackground(now) {
     if (n.y > h + 20) n.y = -20;
 
     bgCtx.beginPath();
-    bgCtx.fillStyle = "rgba(116,239,255,0.22)";
+    bgCtx.fillStyle = "rgba(116,239,255,0.18)";
     bgCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
     bgCtx.fill();
   });
@@ -464,9 +488,9 @@ function drawBackground(now) {
       const dx = a.x - b.x;
       const dy = a.y - b.y;
       const dist = Math.hypot(dx, dy);
-      if (dist < 120) {
+      if (dist < 128) {
         bgCtx.beginPath();
-        bgCtx.strokeStyle = `rgba(116,239,255,${(1 - dist / 120) * 0.07})`;
+        bgCtx.strokeStyle = `rgba(116,239,255,${(1 - dist / 128) * 0.06})`;
         bgCtx.moveTo(a.x, a.y);
         bgCtx.lineTo(b.x, b.y);
         bgCtx.stroke();
@@ -474,269 +498,356 @@ function drawBackground(now) {
     }
   }
 
-  bgCtx.beginPath();
   for (let i = 0; i < 4; i++) {
-    const yy = h * (0.2 + i * 0.12);
+    const yy = h * (0.18 + i * 0.13);
+    bgCtx.beginPath();
     bgCtx.moveTo(w * 0.08, yy);
     bgCtx.bezierCurveTo(
-      w * 0.24, yy - 18 + Math.sin(now * 0.4 + i) * 8,
-      w * 0.74, yy + 14 + Math.cos(now * 0.35 + i) * 8,
-      w * 0.92, yy - 6
+      w * 0.22, yy - 28 + Math.sin(now * 0.42 + i) * 16,
+      w * 0.76, yy + 20 + Math.cos(now * 0.36 + i) * 16,
+      w * 0.92, yy - 8
     );
+    bgCtx.strokeStyle = "rgba(116,239,255,0.035)";
+    bgCtx.stroke();
   }
-  bgCtx.strokeStyle = "rgba(116,239,255,0.05)";
-  bgCtx.stroke();
+}
+
+function roundedFacePath(ctx, s) {
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 1.02);
+  ctx.bezierCurveTo(s * 0.52, -s * 0.94, s * 0.68, -s * 0.34, s * 0.62, s * 0.18);
+  ctx.bezierCurveTo(s * 0.56, s * 0.56, s * 0.34, s * 0.92, 0, s * 1.18);
+  ctx.bezierCurveTo(-s * 0.34, s * 0.92, -s * 0.56, s * 0.56, -s * 0.62, s * 0.18);
+  ctx.bezierCurveTo(-s * 0.68, -s * 0.34, -s * 0.52, -s * 0.94, 0, -s * 1.02);
+  ctx.closePath();
 }
 
 function drawFace(now) {
   faceCtx.clearRect(0, 0, w, h);
 
-  entity.idlePhase += 0.012;
-  entity.waveDrift += 0.006;
-
   entity.listenGlow += ((isListening ? 1 : 0) - entity.listenGlow) * 0.05;
   entity.thinkGlow += ((appState === "thinking" ? 1 : 0) - entity.thinkGlow) * 0.05;
   entity.speakGlow += ((isSpeaking ? 1 : 0) - entity.speakGlow) * 0.08;
 
-  pointer.x += (pointer.tx - pointer.x) * 0.06;
-  pointer.y += (pointer.ty - pointer.y) * 0.06;
+  pointer.x += (pointer.tx - pointer.x) * 0.07;
+  pointer.y += (pointer.ty - pointer.y) * 0.07;
 
   const dx = (pointer.x - entity.cx) / entity.scale;
   const dy = (pointer.y - entity.cy) / entity.scale;
 
-  entity.eyeTargetX = Math.max(-10, Math.min(10, dx * 8));
-  entity.eyeTargetY = Math.max(-6, Math.min(6, dy * 6));
+  entity.eyeTargetX = Math.max(-12, Math.min(12, dx * 9));
+  entity.eyeTargetY = Math.max(-7, Math.min(7, dy * 7));
 
-  entity.eyeLookX += (entity.eyeTargetX - entity.eyeLookX) * 0.15;
-  entity.eyeLookY += (entity.eyeTargetY - entity.eyeLookY) * 0.15;
+  entity.eyeLookX += (entity.eyeTargetX - entity.eyeLookX) * 0.16;
+  entity.eyeLookY += (entity.eyeTargetY - entity.eyeLookY) * 0.16;
 
-  const blinkNow = performance.now();
-  if (blinkNow > entity.blinkCooldown && entity.blinkTimer <= 0) {
-    entity.blinkTimer = 1;
-    entity.blinkCooldown = blinkNow + 2800 + Math.random() * 3200;
+  const nowMs = performance.now();
+  if (nowMs > entity.blinkCooldown && entity.blinkT <= 0) {
+    entity.blinkT = 1;
+    entity.blinkCooldown = nowMs + 2600 + Math.random() * 3000;
   }
 
-  if (entity.blinkTimer > 0) {
-    entity.blinkTimer -= 0.16;
-    entity.eyeOpen = Math.max(0.08, Math.sin(entity.blinkTimer * Math.PI));
-    if (entity.blinkTimer <= 0) entity.eyeOpen = 1;
+  if (entity.blinkT > 0) {
+    entity.blinkT -= 0.18;
+    entity.eyeOpen = Math.max(0.06, Math.sin(entity.blinkT * Math.PI));
+    if (entity.blinkT <= 0) entity.eyeOpen = 1;
   } else {
     entity.eyeOpen += (1 - entity.eyeOpen) * 0.18;
   }
 
   if (isSpeaking) {
-    if (now > entity.mouthRandGate) {
-      entity.mouthRandGate = now + (0.07 + Math.random() * 0.15);
-      entity.mouthRandAmp = 0.12 + Math.random() * 0.34;
-      entity.mouthRandWidth = -0.05 + Math.random() * 0.12;
+    if (now > entity.mouthGate) {
+      entity.mouthGate = now + (0.06 + Math.random() * 0.14);
+      entity.mouthAmp = 0.16 + Math.random() * 0.42;
+      entity.mouthWidth = -0.035 + Math.random() * 0.09;
+      entity.mouthSpeed = 0.85 + Math.random() * 1.2;
     }
-    entity.mouthPhase += 0.22;
+    entity.mouthPhase += 0.2 * entity.mouthSpeed;
     const a = (Math.sin(entity.mouthPhase) + 1) / 2;
-    const b = (Math.sin(entity.mouthPhase * 1.73 + 0.6) + 1) / 2;
-    entity.mouthTarget = 0.05 + ((a * 0.62 + b * 0.38) * entity.mouthRandAmp);
+    const b = (Math.sin(entity.mouthPhase * 1.8 + 0.7) + 1) / 2;
+    entity.mouthTarget = 0.04 + ((a * 0.64 + b * 0.36) * entity.mouthAmp);
   } else {
-    entity.mouthTarget = 0.008;
-    entity.mouthRandWidth *= 0.84;
+    entity.mouthTarget = 0.006;
+    entity.mouthWidth *= 0.88;
   }
 
-  entity.mouthOpen += (entity.mouthTarget - entity.mouthOpen) * 0.16;
+  entity.mouthOpen += (entity.mouthTarget - entity.mouthOpen) * 0.18;
+  entity.orbitPhase += 0.01;
+  entity.faceNoise += 0.005;
 
-  const faceScale = entity.scale;
-  const faceY = entity.cy + Math.sin(entity.idlePhase * 0.5) * 2.2;
-  const faceX = entity.cx + Math.cos(entity.idlePhase * 0.38) * 1.4;
+  const s = entity.scale;
+  const driftX = Math.cos(entity.orbitPhase * 0.52) * 1.4;
+  const driftY = Math.sin(entity.orbitPhase * 0.35) * 2.4;
+  const cx = entity.cx + driftX;
+  const cy = entity.cy + driftY;
 
-  const halo = faceCtx.createRadialGradient(faceX, faceY, faceScale * 0.2, faceX, faceY, faceScale * 1.45);
-  halo.addColorStop(0, `rgba(116,239,255,${0.12 + entity.listenGlow * 0.08 + entity.thinkGlow * 0.06})`);
-  halo.addColorStop(0.38, "rgba(40,180,255,0.08)");
+  const halo = faceCtx.createRadialGradient(cx, cy, s * 0.14, cx, cy, s * 1.6);
+  halo.addColorStop(0, `rgba(140,245,255,${0.18 + entity.listenGlow * 0.08 + entity.thinkGlow * 0.12 + entity.speakGlow * 0.1})`);
+  halo.addColorStop(0.45, "rgba(40,180,255,0.08)");
   halo.addColorStop(1, "rgba(0,0,0,0)");
   faceCtx.fillStyle = halo;
   faceCtx.beginPath();
-  faceCtx.arc(faceX, faceY, faceScale * 1.45, 0, Math.PI * 2);
+  faceCtx.arc(cx, cy, s * 1.6, 0, Math.PI * 2);
   faceCtx.fill();
 
   faceCtx.save();
-  faceCtx.translate(faceX, faceY);
+  faceCtx.translate(cx, cy);
 
-  drawWaveHead(faceCtx, faceScale, now);
-  drawEyes(faceCtx, faceScale);
-  drawMouth(faceCtx, faceScale);
-  drawNose(faceCtx, faceScale);
-  drawJawLines(faceCtx, faceScale, now);
+  drawEnergyRibbons(faceCtx, s, now);
+  drawOrbitalDust(faceCtx, s, now);
+  drawHeadMesh(faceCtx, s, now);
+  drawEyeSet(faceCtx, s, now);
+  drawNose(faceCtx, s);
+  drawMouth(faceCtx, s);
+  drawNeckAndChest(faceCtx, s, now);
 
   faceCtx.restore();
 }
 
-function drawWaveHead(ctx, s, now) {
-  const verticalGrad = ctx.createLinearGradient(0, -s * 1.2, 0, s * 1.35);
-  verticalGrad.addColorStop(0, "rgba(138,247,255,0.22)");
-  verticalGrad.addColorStop(0.52, "rgba(49,197,255,0.16)");
-  verticalGrad.addColorStop(1, "rgba(18,120,180,0.10)");
-
-  ctx.beginPath();
-  ctx.ellipse(0, -s * 0.1, s * 0.62, s * 0.92, 0, 0, Math.PI * 2);
-  ctx.fillStyle = verticalGrad;
-  ctx.fill();
-
+function drawEnergyRibbons(ctx, s, now) {
   ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(0, -s * 0.1, s * 0.62, s * 0.92, 0, 0, Math.PI * 2);
+  for (let i = 0; i < 8; i++) {
+    const radius = s * (1.05 + i * 0.08);
+    const offset = now * (0.7 + i * 0.06);
+    ctx.beginPath();
+    for (let a = -1.2; a <= 1.2; a += 0.06) {
+      const x = Math.sin(a * 2.2 + offset) * radius;
+      const y = Math.cos(a + offset * 0.35) * radius * 0.32 + a * s * 0.55;
+      if (a === -1.2) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(120,240,255,${0.02 + i * 0.006 + entity.speakGlow * 0.02})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawOrbitalDust(ctx, s, now) {
+  orbitParticles.forEach((p, i) => {
+    p.a += p.s * (1 + entity.listenGlow * 0.5 + entity.thinkGlow * 0.4);
+    const x = Math.cos(p.a + now * 0.2) * p.r;
+    const y = Math.sin(p.a * 0.82 + now * 0.12) * (p.r * 0.44) + p.yShift;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(130,245,255,${p.alpha + entity.thinkGlow * 0.06})`;
+    ctx.arc(x, y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function drawHeadMesh(ctx, s, now) {
+  ctx.save();
+  roundedFacePath(ctx, s);
   ctx.clip();
 
-  const lineCount = 32;
-  for (let i = 0; i < lineCount; i++) {
-    const t = i / (lineCount - 1);
-    const yy = -s * 0.95 + t * s * 1.65;
-    const wobble = Math.sin(entity.waveDrift * 2.1 + i * 0.35 + now) * (s * 0.016) * (1 + entity.thinkGlow * 0.7);
+  const skin = ctx.createLinearGradient(0, -s * 1.1, 0, s * 1.2);
+  skin.addColorStop(0, "rgba(150,248,255,0.18)");
+  skin.addColorStop(0.32, "rgba(72,200,255,0.12)");
+  skin.addColorStop(0.72, "rgba(18,110,165,0.09)");
+  skin.addColorStop(1, "rgba(10,60,110,0.04)");
+  ctx.fillStyle = skin;
+  ctx.fillRect(-s * 1.1, -s * 1.3, s * 2.2, s * 2.8);
 
+  for (let i = 0; i < 58; i++) {
+    const t = i / 57;
+    const yy = -s * 1.02 + t * s * 2.05;
+    const bow = Math.sin((t * Math.PI) + entity.faceNoise) * s * 0.08;
     ctx.beginPath();
-    ctx.moveTo(-s * 0.72, yy);
+    ctx.moveTo(-s * 0.8, yy);
     ctx.bezierCurveTo(
-      -s * 0.38, yy + wobble,
-      s * 0.38, yy - wobble,
-      s * 0.72, yy
+      -s * 0.34, yy + bow,
+      s * 0.34, yy - bow,
+      s * 0.8, yy
     );
-    ctx.strokeStyle = `rgba(116,239,255,${0.08 + t * 0.07})`;
+    ctx.strokeStyle = `rgba(140,245,255,${0.03 + t * 0.09 + entity.thinkGlow * 0.04})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 
-  const contourCount = 18;
-  for (let i = 0; i < contourCount; i++) {
-    const t = i / (contourCount - 1);
-    const xx = -s * 0.56 + t * s * 1.12;
+  for (let i = 0; i < 34; i++) {
+    const t = i / 33;
+    const xx = -s * 0.62 + t * s * 1.24;
+    const ripple = Math.sin(now * 0.8 + i * 0.45) * s * 0.018;
     ctx.beginPath();
-    ctx.moveTo(xx, -s * 1.0);
+    ctx.moveTo(xx, -s * 1.05);
     ctx.bezierCurveTo(
-      xx + Math.sin(now * 0.8 + i) * s * 0.02, -s * 0.45,
-      xx - Math.cos(now * 0.7 + i) * s * 0.02, s * 0.35,
-      xx, s * 0.82
+      xx + ripple, -s * 0.36,
+      xx - ripple, s * 0.44,
+      xx, s * 1.0
     );
-    ctx.strokeStyle = `rgba(116,239,255,${0.03 + (1 - Math.abs(t - 0.5) * 2) * 0.08})`;
+    ctx.strokeStyle = `rgba(130,240,255,${0.025 + (1 - Math.abs(t - 0.5) * 2) * 0.06})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 
-  if (entity.thinkGlow > 0.02) {
-    for (let i = 0; i < 8; i++) {
-      const ry = -s * 0.55 + i * s * 0.12;
-      ctx.beginPath();
-      ctx.moveTo(-s * 0.2, ry);
-      ctx.lineTo(s * 0.24, ry + Math.sin(now * 2 + i) * 4);
-      ctx.strokeStyle = `rgba(170,250,255,${0.04 + entity.thinkGlow * 0.12})`;
-      ctx.stroke();
-    }
+  const leftVoid = ctx.createLinearGradient(-s * 0.8, 0, -s * 0.2, 0);
+  leftVoid.addColorStop(0, "rgba(140,245,255,0.24)");
+  leftVoid.addColorStop(0.6, "rgba(40,180,255,0.08)");
+  leftVoid.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = leftVoid;
+  ctx.fillRect(-s * 0.82, -s * 0.9, s * 0.42, s * 1.7);
+
+  const rightFragment = ctx.createLinearGradient(s * 0.24, 0, s * 0.82, 0);
+  rightFragment.addColorStop(0, "rgba(0,0,0,0)");
+  rightFragment.addColorStop(0.45, "rgba(110,240,255,0.08)");
+  rightFragment.addColorStop(1, "rgba(180,250,255,0.22)");
+  ctx.fillStyle = rightFragment;
+  ctx.fillRect(s * 0.24, -s * 0.9, s * 0.6, s * 1.7);
+
+  for (let i = 0; i < 220; i++) {
+    const px = s * (0.18 + Math.random() * 0.7);
+    const py = -s * 0.95 + Math.random() * s * 1.95;
+    const sz = 0.5 + Math.random() * 1.6;
+    const drift = Math.sin(now * 0.8 + i) * 3;
+    ctx.fillStyle = `rgba(150,248,255,${0.04 + Math.random() * 0.18})`;
+    ctx.fillRect(px + drift, py, sz, sz);
   }
 
   ctx.restore();
 
   ctx.beginPath();
-  ctx.ellipse(0, -s * 0.1, s * 0.62, s * 0.92, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(130,244,255,${0.14 + entity.listenGlow * 0.08 + entity.speakGlow * 0.06})`;
-  ctx.lineWidth = 1.1;
+  roundedFacePath(ctx, s);
+  ctx.strokeStyle = `rgba(160,248,255,${0.18 + entity.listenGlow * 0.06 + entity.speakGlow * 0.07})`;
+  ctx.lineWidth = 1.3;
   ctx.stroke();
 
-  const sideGlowAlpha = 0.12 + entity.listenGlow * 0.09 + entity.speakGlow * 0.1;
   ctx.beginPath();
-  ctx.ellipse(0, -s * 0.1, s * 0.66, s * 0.96, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(116,239,255,${sideGlowAlpha})`;
+  roundedFacePath(ctx, s * 1.02);
+  ctx.strokeStyle = `rgba(120,240,255,${0.08 + entity.thinkGlow * 0.08})`;
   ctx.lineWidth = 1;
   ctx.stroke();
 }
 
-function drawEyes(ctx, s) {
-  const eyeY = -s * 0.08;
-  const eyeOffset = s * 0.21;
-  const eyeW = s * 0.18;
-  const eyeH = s * 0.065 * entity.eyeOpen;
+function drawEyeSet(ctx, s) {
+  const y = -s * 0.12;
+  const x = s * 0.23;
+  const eyeW = s * 0.16;
+  const eyeH = Math.max(2, s * 0.055 * entity.eyeOpen);
 
-  drawSingleEye(ctx, -eyeOffset, eyeY, eyeW, eyeH, s);
-  drawSingleEye(ctx, eyeOffset, eyeY, eyeW, eyeH, s);
+  drawSingleEye(ctx, -x, y, eyeW, eyeH, s);
+  drawSingleEye(ctx, x, y, eyeW, eyeH, s);
+
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.34, -s * 0.26);
+  ctx.quadraticCurveTo(-s * 0.23, -s * 0.31, -s * 0.08, -s * 0.23);
+  ctx.moveTo(s * 0.34, -s * 0.26);
+  ctx.quadraticCurveTo(s * 0.23, -s * 0.31, s * 0.08, -s * 0.23);
+  ctx.strokeStyle = "rgba(140,245,255,0.16)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
 }
 
-function drawSingleEye(ctx, x, y, w2, h2, s) {
+function drawSingleEye(ctx, x, y, eyeW, eyeH, s) {
   ctx.save();
   ctx.translate(x, y);
 
   ctx.beginPath();
-  ctx.ellipse(0, 0, w2, Math.max(h2, 2), 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(170,248,255,0.42)";
-  ctx.lineWidth = 1.4;
+  ctx.ellipse(0, 0, eyeW, eyeH, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(170,248,255,0.38)";
+  ctx.lineWidth = 1.3;
   ctx.stroke();
 
-  const irisR = s * 0.04;
-  const px = entity.eyeLookX;
-  const py = entity.eyeLookY;
+  const irisX = entity.eyeLookX;
+  const irisY = entity.eyeLookY;
+  const irisR = s * 0.045;
 
-  const irisGrad = ctx.createRadialGradient(px, py, 0, px, py, irisR * 2.2);
-  irisGrad.addColorStop(0, "rgba(220,255,255,0.95)");
-  irisGrad.addColorStop(0.25, "rgba(120,240,255,0.92)");
-  irisGrad.addColorStop(1, "rgba(40,160,230,0.18)");
-
+  const iris = ctx.createRadialGradient(irisX, irisY, 0, irisX, irisY, irisR * 2.4);
+  iris.addColorStop(0, "rgba(255,255,255,0.96)");
+  iris.addColorStop(0.22, "rgba(160,248,255,0.96)");
+  iris.addColorStop(0.58, "rgba(60,190,255,0.72)");
+  iris.addColorStop(1, "rgba(20,120,190,0.06)");
+  ctx.fillStyle = iris;
   ctx.beginPath();
-  ctx.fillStyle = irisGrad;
-  ctx.arc(px, py, irisR * 1.55, 0, Math.PI * 2);
+  ctx.arc(irisX, irisY, irisR * 1.7, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.beginPath();
-  ctx.fillStyle = "rgba(10,22,35,0.95)";
-  ctx.arc(px, py, irisR * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(8,20,35,0.95)";
+  ctx.arc(irisX, irisY, irisR * 0.55, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.beginPath();
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.arc(px + irisR * 0.25, py - irisR * 0.28, irisR * 0.18, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.arc(irisX + irisR * 0.32, irisY - irisR * 0.32, irisR * 0.18, 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.restore();
-}
-
-function drawMouth(ctx, s) {
-  const mouthY = s * 0.34;
-  const mouthW = s * (0.13 + entity.mouthRandWidth + entity.mouthOpen * 0.08);
-  const mouthH = s * (0.010 + entity.mouthOpen * 0.11);
-
-  ctx.save();
-  ctx.translate(0, mouthY);
-
-  ctx.beginPath();
-  ctx.ellipse(0, 0, mouthW, mouthH, 0, 0, Math.PI * 2);
-  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, mouthW);
-  g.addColorStop(0, `rgba(180,250,255,${0.18 + entity.mouthOpen * 0.55})`);
-  g.addColorStop(1, "rgba(30,140,210,0.02)");
-  ctx.fillStyle = g;
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(-mouthW, 0);
-  ctx.quadraticCurveTo(0, mouthH * (2.4 + entity.mouthOpen * 4.5), mouthW, 0);
-  ctx.strokeStyle = `rgba(180,250,255,${0.22 + entity.mouthOpen * 0.45})`;
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
 
   ctx.restore();
 }
 
 function drawNose(ctx, s) {
   ctx.beginPath();
-  ctx.moveTo(0, s * 0.01);
-  ctx.quadraticCurveTo(s * 0.018, s * 0.12, 0, s * 0.2);
-  ctx.strokeStyle = "rgba(130,244,255,0.15)";
+  ctx.moveTo(0, -s * 0.03);
+  ctx.quadraticCurveTo(s * 0.04, s * 0.12, 0, s * 0.25);
+  ctx.strokeStyle = "rgba(140,245,255,0.16)";
   ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.04, s * 0.24);
+  ctx.quadraticCurveTo(0, s * 0.29, s * 0.04, s * 0.24);
+  ctx.strokeStyle = "rgba(140,245,255,0.10)";
   ctx.stroke();
 }
 
-function drawJawLines(ctx, s, now) {
-  const alpha = 0.06 + entity.listenGlow * 0.05 + entity.speakGlow * 0.06;
-  ctx.strokeStyle = `rgba(116,239,255,${alpha})`;
-  ctx.lineWidth = 1;
+function drawMouth(ctx, s) {
+  const y = s * 0.38;
+  const w2 = s * (0.12 + entity.mouthWidth + entity.mouthOpen * 0.08);
+  const h2 = s * (0.008 + entity.mouthOpen * 0.09);
 
-  for (let i = 0; i < 8; i++) {
-    const x = -s * 0.34 + i * s * 0.095;
+  ctx.save();
+  ctx.translate(0, y);
+
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, w2 * 1.8);
+  glow.addColorStop(0, `rgba(190,252,255,${0.12 + entity.mouthOpen * 0.44})`);
+  glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, w2 * 1.3, h2 * 3.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(-w2, 0);
+  ctx.quadraticCurveTo(0, h2 * (2.2 + entity.mouthOpen * 4.2), w2, 0);
+  ctx.strokeStyle = `rgba(190,252,255,${0.26 + entity.mouthOpen * 0.48})`;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawNeckAndChest(ctx, s, now) {
+  ctx.save();
+
+  const neckGrad = ctx.createLinearGradient(0, s * 0.5, 0, s * 1.9);
+  neckGrad.addColorStop(0, "rgba(150,248,255,0.14)");
+  neckGrad.addColorStop(1, "rgba(20,110,165,0.03)");
+  ctx.fillStyle = neckGrad;
+
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.18, s * 0.72);
+  ctx.lineTo(-s * 0.1, s * 1.35);
+  ctx.quadraticCurveTo(0, s * 1.56, s * 0.1, s * 1.35);
+  ctx.lineTo(s * 0.18, s * 0.72);
+  ctx.closePath();
+  ctx.fill();
+
+  for (let i = 0; i < 20; i++) {
+    const t = i / 19;
+    const xx = -s * 0.55 + t * s * 1.1;
     ctx.beginPath();
-    ctx.moveTo(x, s * 0.42);
-    ctx.lineTo(x + Math.sin(now * 0.7 + i) * 4, s * 0.87);
+    ctx.moveTo(xx, s * 0.95);
+    ctx.quadraticCurveTo(
+      xx * 0.65 + Math.sin(now * 0.7 + i) * 3,
+      s * 1.25,
+      xx * 0.28,
+      s * 1.72
+    );
+    ctx.strokeStyle = `rgba(130,240,255,${0.03 + (1 - Math.abs(t - 0.5) * 2) * 0.08})`;
+    ctx.lineWidth = 1;
     ctx.stroke();
   }
+
+  ctx.restore();
 }
 
 function drawFx() {
@@ -747,22 +858,30 @@ function drawFx() {
   fxParticles.forEach((p) => {
     p.x += p.vx;
     p.y += p.vy;
-    p.vx *= 0.987;
-    p.vy *= 0.987;
+    p.vx *= 0.986;
+    p.vy *= 0.986;
     p.life -= 1;
 
-    const a = (p.life / p.maxLife) * 0.92;
+    const a = (p.life / p.maxLife) * 0.95;
     fxCtx.beginPath();
     fxCtx.fillStyle = `rgba(${p.color},${a})`;
     fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
     fxCtx.fill();
   });
 
-  const ringAlpha = 0.04 + entity.listenGlow * 0.05 + entity.thinkGlow * 0.06 + entity.speakGlow * 0.05;
-  for (let i = 0; i < 3; i++) {
+  const ringAlpha = 0.04 + entity.listenGlow * 0.05 + entity.thinkGlow * 0.08 + entity.speakGlow * 0.06;
+  for (let i = 0; i < 4; i++) {
     fxCtx.beginPath();
-    fxCtx.arc(entity.cx, entity.cy, entity.scale * (0.92 + i * 0.16 + Math.sin(performance.now() * 0.0005 + i) * 0.01), 0, Math.PI * 2);
-    fxCtx.strokeStyle = `rgba(116,239,255,${ringAlpha - i * 0.012})`;
+    fxCtx.ellipse(
+      entity.cx,
+      entity.cy,
+      entity.scale * (0.88 + i * 0.14),
+      entity.scale * (1.18 + i * 0.09),
+      0,
+      0,
+      Math.PI * 2
+    );
+    fxCtx.strokeStyle = `rgba(116,239,255,${ringAlpha - i * 0.01})`;
     fxCtx.lineWidth = 1;
     fxCtx.stroke();
   }
